@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python extract_full.py)",
+      "Bash(python3 extract_full.py)",
+      "Bash(chmod +x extract_simple.sh)",
+      "Bash(bash extract_simple.sh)",
+      "Bash(chmod +x extract_complete.sh)",
+      "Bash(bash extract_complete.sh)",
+      "Bash(chmod +x build_final.sh)",
+      "Bash(bash build_final.sh)"
+    ]
+  }
+}

@@ -1,0 +1,157 @@
+/*
+配置初始化
+1、对流程图变量（g_iCount、g_iRetryNumber、g_bRetryStatus、g_dicTransactionItem）进行初始化处理
+2、全局的日志级别设置，默认级别为2
+3、对流程图变量(g_dicConfigData)自定义拼装字典数据，供主流程图全局使用（子流程需要输入才可使用）
+4、若还有其他特殊的参数、常量，请自行扩展本地res文件夹下的配置文件Config.xlsx
+*/
+Dim msg = "本模板执行前须安装Office2007及其以上或者WPS2016及其以上，请检查是否安装后再次重试。"
+
+Dim config = {}
+Dim arrayRet = ""
+Dim objExcelWorkBook = ""
+Dim iColumsCount = 0
+Dim iRowsCount = 0
+Dim bRet = ""
+Dim logLevel = ""
+Dim sRet = ""
+Dim HomePath = ""
+Dim ExScreenshotsFolderPath = ""
+
+Rem 参数初始化
+g_iCount = 0 //重试计数器初始值
+g_iRetryNumber = 2 //默认设置，也可以配合Config.xlsx或其他情况使用
+g_bRetryStatus = False //事务项重试状态初始值
+g_dicTransactionItem = Null //事务项(数据)
+g_bFirstRun = True //第一次运行标识
+Dim sheetsName = []
+sheetsName = ["全局设置","常量设置","本地参数"] //默认的3个工作表名称
+
+objExcelWorkBook = Excel.OpenExcel(@res"Data\\Config.xlsx",True,"Excel","","")
+For Each sheetName In sheetsName
+	iRowsCount = Excel.GetRowsCount(objExcelWorkBook,sheetName)
+	If iRowsCount > 1
+		arrayRet = Excel.ReadRange(objExcelWorkBook,sheetName,"A2:B"&iRowsCount)
+		config[sheetName] = {}
+		For Each row In arrayRet
+			If Trim(row[0],"") <> ""
+				config[sheetName][Trim(row[0],"")] = Trim(row[1],"")
+			End If  
+		Next
+	Else
+		Log.Warn("配置文件Config.xlsx的["&sheetName&"]工作表无配置信息！")
+		
+	End If    
+Next
+
+
+Excel.CloseExcel(objExcelWorkBook,True)
+
+//方式一：从本流程目录的res文件夹下读取Data\\Config.xlsx文件，设置日志级别
+Rem 从本流程目录的res文件夹下读取Data\\Config.xlsx文件，初始化日志级别
+If Not IsNull(config["全局设置"]["LogLevel"])
+	logLevel = CInt(config["全局设置"]["LogLevel"])
+End If
+
+/*
+//方式二2：从Commander中读取指定参数，以此参数值设置日志级别
+Try
+	//此方式须企业版Creator才可支持
+	logLevel = Asset.GetAsset("LogLevel")
+Catch Exception
+	Log.Error(Exception)
+    //添加一些处理
+
+End Try
+*/
+
+If (IsNull(logLevel)) Or (logLevel = "")
+	logLevel = 2
+End If
+
+If (logLevel < 0 ) Or (logLevel > 3)
+	logLevel = 2
+End If
+
+Log.SetLevel(logLevel)
+Log.Info("已设置 全局日志级别 = "&CStr(logLevel))
+
+Rem 初始化屏幕截图本地保存路径
+HomePath = Sys.GetHomePath() //获取当前用户文件夹路径
+ExScreenshotsFolderPath = config["常量设置"]["ExScreenshotsFolderPath"]
+
+If Not IsNull(ExScreenshotsFolderPath)
+	ExScreenshotsFolderPath = Trim(ExScreenshotsFolderPath," ") //去掉两侧空格
+	//判断是相对路径还是绝对路径
+	sRet = Left(ExScreenshotsFolderPath,1) //提取左侧第一个字符串
+	
+	If sRet = "\\"
+		//为相对路径
+		ExScreenshotsFolderPath = HomePath&ExScreenshotsFolderPath
+		config["常量设置"]["ExScreenshotsFolderPath"] = ExScreenshotsFolderPath
+	Else
+		//为绝对路径
+		
+	End If
+	
+	bRet = File.FolderExists(ExScreenshotsFolderPath)	
+	If Not bRet
+		File.CreateFolder(ExScreenshotsFolderPath)
+		Log.Info("已自动创建本地文件夹： "&ExScreenshotsFolderPath)
+	End If        
+	Log.Info("屏幕截图保存路径为："&ExScreenshotsFolderPath)
+End If
+
+
+
+Rem 初始化最大重试次数
+If Not IsNull(config["常量设置"]["MaxRetryNumber"])
+	g_iRetryNumber = CInt(config["常量设置"]["MaxRetryNumber"])
+End If
+
+
+Rem 在这里开始扩展Config.xlsx
+//如果新增了工作表和内容，可以在此处读取，最终拼装到变量config里
+
+
+
+
+Rem 结束扩展Config.xlsx
+
+/*
+加载自定义配置字典，并在整个流程中使用
+1、可从数据库中读取配置数据
+2、可从本地其他配置文件(如ini、json文件等)中读取配置数据
+3、可请求WebAPI从返回数据中读取配置数据
+4、其他方式中读取配置数据
+5、推荐结合Commander的数据管理中的参数、凭据使用
+*/
+
+
+Rem 在这里读取数据库、读取本地其他配置文件、请求WebAPI、...
+//检查本地文件夹是否存在等
+
+
+Rem 推荐结合Commander的数据管理中的参数、凭据使用
+
+
+
+
+g_dicConfigData= config //流程图变量赋值，可自行扩展后以供主流程图使用(子流程须输入赋值后才可使用)
+
+
+/*
+//当需要对局部单条或多条命令自行处理异常时，可参考以下模板，已经捕获的异常不会触发流程走向“异常虚线”
+//当流程块或子流程内发生异常，且不想自行捕获时，可以通过拉出“异常虚线”指向另一个流程块，在此流程内处理系统异常，从系统变量($BlockInput)可以获取抛出的异常信息
+Dim BusinessException = Null
+Try
+BusinessException = Null
+
+
+Catch Exception
+    BusinessException = Exception
+    Log.Error("执行[xxx] 失败："&CStr(Exception))
+    //可自行扩展SMTP邮件发送、发起Post请求、更新数据库等操作
+    
+End Try
+*/

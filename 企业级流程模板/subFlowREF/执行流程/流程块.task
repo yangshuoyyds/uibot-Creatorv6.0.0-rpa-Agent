@@ -1,0 +1,27 @@
+/*
+开始执行事务流程
+1、可从输入的流程图变量inConfig中获取配置相关的字段信息
+2、可从流程图变量inTransactionItem中获取事务项执行时本身需要的字典数据
+3、具体业务可在子流程内具体扩展，建议子流程的异常抛出到主流程层面通过“异常”虚线分支指向的流程块来处理
+*/
+Dim configField1 = ""
+Dim configField2 = ""
+Dim itemField1 = ""
+Dim itemField2 = ""
+Try
+	Log.Info("已开始执行事务流程！")
+	Rem  在这里开始具体的RPA业务操作
+	
+	configField1 = inConfig["key1"]
+	configField2 = inConfig["key2"]
+	
+	itemField1 = inTransactionItem["itemA"]
+	itemField2 = inTransactionItem["itemB"]
+	//todo something
+	
+	
+	
+Catch Exception
+	BusinessException = Exception
+	Log.Error("执行[执行流程] 失败："&CStr(Exception))
+End Try

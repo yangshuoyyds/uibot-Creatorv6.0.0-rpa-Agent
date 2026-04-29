@@ -1,0 +1,27 @@
+/*
+目标程序初始化
+1、如从流程图变量g_dicConfigData中读取关联字段，进行处理
+2、如检查RPA流程的目标程序是否已安装等必要前置条件
+*/
+Log.Info("正在初始化目标程序...")
+//如关闭残留进程、检查指定exe文件是否存在、判断特殊元素是否存在等
+Dim bRet = ""
+Dim appArr = []
+
+If Not IsNull(g_dicConfigData["本地参数"]["appsName"])
+	appArr = Split(g_dicConfigData["本地参数"]["appsName"],",")
+	If Len(appArr) > 0
+		For Each appName In appArr
+			bRet=App.GetStatus(appName)
+			If bRet
+				App.Kill(appName)
+			End If
+		Next  
+	Else
+		Log.Warn("未配置此流程关联的目标程序的进程名称，可能会导致目标程序初始化失败！")
+	End If
+End If
+
+
+
+Log.Info("初始化目标程序 结束")

@@ -1,0 +1,358 @@
+{
+    "id": "444e7940-430f-11f1-82bc-6d5d6963e342",
+    "name": "企业级流程模板",
+    "version": "6.0.0.211215",
+    "variables": [
+        {
+            "type": "none",
+            "name": "g_bRetryStatus",
+            "value": "False"
+        },
+        {
+            "type": "none",
+            "name": "g_dicTransactionItem",
+            "value": "Null"
+        },
+        {
+            "type": "none",
+            "name": "g_dicConfigData",
+            "value": "{}"
+        },
+        {
+            "type": "none",
+            "name": "g_iCount",
+            "value": "0"
+        },
+        {
+            "type": "none",
+            "name": "g_iRetryNumber",
+            "value": "0"
+        },
+        {
+            "type": "none",
+            "name": "g_bFirstRun",
+            "value": "True"
+        }
+    ],
+    "flow": [
+        {
+            "id": "start",
+            "rect": {
+                "x": 0,
+                "y": 10,
+                "width": 140,
+                "height": 50
+            },
+            "caption": "流程开始",
+            "type": "begin",
+            "next": {
+                "vertices": [],
+                "refId": "444ea050-430f-11f1-82bc-6d5d6963e342"
+            }
+        },
+        {
+            "id": "444ea050-430f-11f1-82bc-6d5d6963e342",
+            "rect": {
+                "x": -28,
+                "y": 100,
+                "width": 196,
+                "height": 64
+            },
+            "caption": "配置初始化",
+            "type": "task",
+            "next": {
+                "vertices": [],
+                "refId": "444ea051-430f-11f1-82bc-6d5d6963e342"
+            },
+            "exception": {
+                "vertices": [
+                    {
+                        "x": 390,
+                        "y": 132
+                    }
+                ],
+                "refId": "444ea052-430f-11f1-82bc-6d5d6963e342"
+            },
+            "file": "配置初始化.task",
+            "in": "",
+            "out": "",
+            "editorMode": "sourceCode",
+            "breakpoints": {}
+        },
+        {
+            "id": "444ea051-430f-11f1-82bc-6d5d6963e342",
+            "rect": {
+                "x": -28,
+                "y": 210,
+                "width": 196,
+                "height": 64
+            },
+            "caption": "目标程序初始化",
+            "type": "task",
+            "next": {
+                "vertices": [
+                    {
+                        "x": 70,
+                        "y": 334
+                    }
+                ],
+                "refId": "444ea053-430f-11f1-82bc-6d5d6963e342"
+            },
+            "exception": {
+                "vertices": [
+                    {
+                        "x": 390,
+                        "y": 230
+                    }
+                ],
+                "refId": "444ea052-430f-11f1-82bc-6d5d6963e342"
+            },
+            "file": "目标程序初始化.task",
+            "in": "",
+            "out": "",
+            "editorMode": "visual",
+            "breakpoints": {}
+        },
+        {
+            "id": "444ea061-430f-11f1-82bc-6d5d6963e342",
+            "rect": {
+                "x": -28,
+                "y": 374,
+                "width": 196,
+                "height": 64
+            },
+            "caption": "重试计数",
+            "type": "task",
+            "next": {
+                "vertices": [
+                    {
+                        "x": -50,
+                        "y": 310
+                    }
+                ],
+                "refId": "444ea051-430f-11f1-82bc-6d5d6963e342"
+            },
+            "exception": {
+                "vertices": [],
+                "refId": ""
+            },
+            "file": "重试计数.task",
+            "in": "",
+            "out": "",
+            "editorMode": "visual",
+            "breakpoints": {}
+        },
+        {
+            "id": "444ea053-430f-11f1-82bc-6d5d6963e342",
+            "rect": {
+                "x": 210,
+                "y": 274,
+                "width": 120,
+                "height": 120
+            },
+            "caption": "首次运行?",
+            "type": "if",
+            "yes": {
+                "vertices": [
+                    {
+                        "x": 410,
+                        "y": 480
+                    }
+                ],
+                "refId": "444ea056-430f-11f1-82bc-6d5d6963e342"
+            },
+            "no": {
+                "vertices": [],
+                "refId": "444ea057-430f-11f1-82bc-6d5d6963e342"
+            },
+            "expression": "g_bFirstRun"
+        },
+        {
+            "id": "444ea05f-430f-11f1-82bc-6d5d6963e342",
+            "rect": {
+                "x": 618,
+                "y": 835,
+                "width": 140,
+                "height": 50
+            },
+            "caption": "流程结束",
+            "type": "end"
+        },
+        {
+            "id": "444ea057-430f-11f1-82bc-6d5d6963e342",
+            "rect": {
+                "x": 210,
+                "y": 438,
+                "width": 120,
+                "height": 120
+            },
+            "caption": "重试?",
+            "type": "if",
+            "yes": {
+                "vertices": [
+                    {
+                        "x": 270,
+                        "y": 590
+                    }
+                ],
+                "refId": "444ea058-430f-11f1-82bc-6d5d6963e342"
+            },
+            "no": {
+                "vertices": [],
+                "refId": "444ea056-430f-11f1-82bc-6d5d6963e342"
+            },
+            "expression": "g_bRetryStatus"
+        },
+        {
+            "id": "444ea05c-430f-11f1-82bc-6d5d6963e342",
+            "rect": {
+                "x": 10,
+                "y": 695,
+                "width": 120,
+                "height": 120
+            },
+            "caption": "有数据？",
+            "type": "if",
+            "yes": {
+                "vertices": [
+                    {
+                        "x": -50,
+                        "y": 750
+                    }
+                ],
+                "refId": "444ea058-430f-11f1-82bc-6d5d6963e342"
+            },
+            "no": {
+                "vertices": [
+                    {
+                        "x": 70,
+                        "y": 830
+                    },
+                    {
+                        "x": 570,
+                        "y": 830
+                    }
+                ],
+                "refId": "444ea05b-430f-11f1-82bc-6d5d6963e342"
+            },
+            "expression": "(Not IsNull(g_dicTransactionItem))"
+        },
+        {
+            "id": "444ea056-430f-11f1-82bc-6d5d6963e342",
+            "rect": {
+                "x": 434,
+                "y": 466,
+                "width": 196,
+                "height": 64
+            },
+            "caption": "获取新数据",
+            "type": "task",
+            "next": {
+                "vertices": [
+                    {
+                        "x": 532,
+                        "y": 755
+                    }
+                ],
+                "refId": "444ea05c-430f-11f1-82bc-6d5d6963e342"
+            },
+            "exception": {
+                "vertices": [],
+                "refId": "444ea052-430f-11f1-82bc-6d5d6963e342"
+            },
+            "file": "获取新数据.task",
+            "in": "",
+            "out": "",
+            "editorMode": "visual",
+            "breakpoints": {}
+        },
+        {
+            "id": "444ea052-430f-11f1-82bc-6d5d6963e342",
+            "rect": {
+                "x": 434,
+                "y": 164,
+                "width": 196,
+                "height": 64
+            },
+            "caption": "异常处理",
+            "type": "task",
+            "next": {
+                "vertices": [],
+                "refId": "444ea05b-430f-11f1-82bc-6d5d6963e342"
+            },
+            "exception": {
+                "vertices": [],
+                "refId": ""
+            },
+            "file": "异常处理.task",
+            "in": "",
+            "out": "",
+            "editorMode": "visual",
+            "breakpoints": {}
+        },
+        {
+            "id": "444ea05b-430f-11f1-82bc-6d5d6963e342",
+            "rect": {
+                "x": 590,
+                "y": 680,
+                "width": 196,
+                "height": 64
+            },
+            "caption": "流程结束",
+            "type": "task",
+            "next": {
+                "vertices": [],
+                "refId": "444ea05f-430f-11f1-82bc-6d5d6963e342"
+            },
+            "exception": {
+                "vertices": [],
+                "refId": ""
+            },
+            "file": "流程结束.task",
+            "in": "",
+            "out": "",
+            "editorMode": "sourceCode",
+            "breakpoints": {}
+        },
+        {
+            "id": "444ea058-430f-11f1-82bc-6d5d6963e342",
+            "rect": {
+                "x": -28,
+                "y": 558,
+                "width": 196,
+                "height": 64
+            },
+            "caption": "执行流程",
+            "type": "subFlow",
+            "next": {
+                "vertices": [
+                    {
+                        "x": 120,
+                        "y": 670
+                    },
+                    {
+                        "x": 410,
+                        "y": 670
+                    },
+                    {
+                        "x": 410,
+                        "y": 558
+                    }
+                ],
+                "refId": "444ea056-430f-11f1-82bc-6d5d6963e342"
+            },
+            "exception": {
+                "vertices": [],
+                "refId": "444ea061-430f-11f1-82bc-6d5d6963e342"
+            },
+            "file": "subFlowREF\\执行流程\\main.prj",
+            "in": {
+                "inTransactionItem": "g_dicTransactionItem",
+                "inConfig": "g_dicConfigData"
+            },
+            "out": {}
+        }
+    ],
+    "type": "flow",
+    "caption": "企业级流程模板"
+}
