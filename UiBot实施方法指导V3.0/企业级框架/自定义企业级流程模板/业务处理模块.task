@@ -1,0 +1,10 @@
+Rem 【流程块注释】作者：XXX
+Rem 【流程块注释】创建时间：XXXX年XX月XX日
+Rem 【流程块注释】业务处理流程
+TracePrint "——————业务处理模块——————"
+
+Rem 判读出异常后，将g_dictGlobal["isEx"]设置为TRUE
+g_dictGlobal["isEx"] = True
+
+TracePrint "——————退出处理模块——————"
+

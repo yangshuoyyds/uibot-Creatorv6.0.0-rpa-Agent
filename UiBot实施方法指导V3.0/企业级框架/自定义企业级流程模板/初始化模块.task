@@ -1,0 +1,17 @@
+Rem 【流程块注释】作者：XXX
+Rem 【流程块注释】创建时间：XXXX年XX月XX日
+Rem 【流程块注释】初始化操作
+TracePrint "——————进入初始化模块——————"
+
+g_iRetryNum = g_iRetryNum + 1
+
+g_dictGlobal = {}
+
+Rem 流程异常记录
+g_dictGlobal["isEx"] = False
+Rem 设定重试次数，有Commander一般放在Commander上，没有Commander一般放在本地Config文件中
+g_dictGlobal["maxRetryNum"] = 3
+
+
+TracePrint "——————退出初始化模块——————"
+

@@ -1,0 +1,13 @@
+
+Rem 【流程块注释】作者：JZL
+Rem 【流程块注释】创建时间：2021年09月17日
+Rem 【流程块注释】初始化流程参数
+Rem 【流程块注释】1、重新给参数赋值
+g_dictGlobal = {}
+
+Rem 1、重新给参数赋值
+g_dictGlobal["ddAddr"] = g_dicConfigData["本地参数"]["当当地址"]
+g_dictGlobal["jdAddr"] = g_dicConfigData["本地参数"]["京东地址"]
+g_dictGlobal["bookName"] = g_dicConfigData["本地参数"]["书籍名"]
+g_dictGlobal["emailAddr"] = g_dicConfigData["本地参数"]["邮件地址"]
+

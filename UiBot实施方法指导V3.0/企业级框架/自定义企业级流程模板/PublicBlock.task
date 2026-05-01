@@ -1,0 +1,9 @@
+Rem 【流程块注释】作者：XXX
+Rem 【流程块注释】创建时间：XXXX年XX月XX日
+Rem 【流程块注释】公共模块，存储函数等
+Function Initialize
+	Rem 参数初始化赋值
+	g_dictGlobal["username"] = "UiBot"
+	g_dictGlobal["password"] = "UiBot"
+End Function
+

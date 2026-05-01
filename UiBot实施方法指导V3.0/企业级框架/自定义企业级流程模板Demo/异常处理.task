@@ -1,0 +1,25 @@
+Log.Error("流程发生异常，正在处理！")
+Dim SystemException = Null
+SystemException = $BlockInput
+
+TracePrint(SystemException)
+
+//不同的异常信息可以通过邮件或者其他方式告知
+//todo
+
+
+
+
+
+//企业版中可配合Commander的“上传屏幕截图”命令使用
+//Upload.UploadScreenShot("","",true,{"sDescribe":""})
+
+//可自行扩展SMTP邮件发送、发起Post请求、更新数据库等操作
+
+
+
+
+
+Log.Info("异常处理完毕！")
+
+

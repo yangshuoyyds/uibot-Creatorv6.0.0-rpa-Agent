@@ -8,7 +8,13 @@
       "Bash(chmod +x extract_complete.sh)",
       "Bash(bash extract_complete.sh)",
       "Bash(chmod +x build_final.sh)",
-      "Bash(bash build_final.sh)"
+      "Bash(bash build_final.sh)",
+      "Bash(git reset *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git commit -m 'docs: 添加v1.6.0版本更新说明文档 *)"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
     ]
   }
 }

@@ -1,0 +1,20 @@
+Rem 【流程块注释】作者：JZL
+Rem 【流程块注释】创建时间：2021年09月17日
+Rem 【流程块注释】异常处理模块
+Rem 【流程块注释】1、捕获异常进行处理
+Rem 1、捕获异常进行处理
+Log.Error("流程发生异常，正在处理！")
+Dim SystemException = Null
+SystemException = $BlockInput
+
+TracePrint(SystemException)
+Rem 不同的异常信息可以通过邮件或者其他方式告知
+Rem todo
+
+
+Rem 企业版中可配合Commander的“上传屏幕截图”命令使用
+Rem Upload.UploadScreenShot("","",true,{"sDescribe":""})
+Rem 可自行扩展SMTP邮件发送、发起Post请求、更新数据库等操作
+Log.Info("异常处理完毕！")
+
+

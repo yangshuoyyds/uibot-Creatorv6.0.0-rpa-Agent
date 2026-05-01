@@ -1,0 +1,91 @@
+Rem 【流程块注释】作者：JZL
+Rem 【流程块注释】创建时间：2021年09月17日
+Rem 【流程块注释】获取当当价格
+Rem 【流程块注释】1、进入当当网站
+Rem 【流程块注释】2、根据书名查询
+Rem 【流程块注释】3、等待查询完毕
+Rem 【流程块注释】4、价格排序
+Rem 【流程块注释】5、等待页面加载
+Rem 【流程块注释】6、得到最低价格
+Dim bRet = ""
+Dim hWeb = ""
+Dim relaySign = ""
+Rem 判断异常
+
+If g_dictGlobal["isEx"] = True
+	log.Info( "异常返回，“获取当当价格模块”")
+	Return
+End If
+Rem 1、进入当当网站
+Rem 打开浏览器，设置窗口全屏
+hWeb = WebBrowser.Create("uibotbrowser",g_dictGlobal["ddAddr"],30000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"sBrowserPath":"","sStartArgs":""})
+#icon("@res:ds29taeh-p8of-0nkg-9qg0-80qqct85e2dp.png")
+Window.Show({"wnd":[{"cls":"Chrome_WidgetWin_0","title":"UiBot浏览器","app":"uibotBrowser"}]},"max")
+Rem 判断网页是否打开成功
+#icon("@res:n5ft9u40-p7qd-m0fl-44iu-f42f19q2vtvf.png")
+bRet = UiElement.Exists({"wnd":[{"cls":"Chrome_WidgetWin_*","title":"*","app":"uibotBrowser"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":{"tagName":"INPUT","attrMap":{"id":"key_S","tag":"INPUT"},"index":0}},{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200})
+Rem 重置等待次数
+relaySign = 0
+Rem  累计等待10秒，10秒元素仍不出现判断为异常，跳出本流程块
+
+Do While bRet = False
+	Delay 1000
+	#icon("@res:jjp34ape-u10j-ogvn-ajur-5g36qcqcrio1.png")
+	bRet = UiElement.Exists({"wnd":[{"cls":"Chrome_WidgetWin_*","title":"*","app":"uibotBrowser"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":{"tagName":"INPUT","attrMap":{"id":"key_S","tag":"INPUT"},"index":0}},{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200})
+	relaySign = relaySign + 1
+	If relaySign = 10
+    Rem 超过10秒跳出循环
+	
+		Log.Error("当当网页打开失败")
+		g_dictGlobal["isEx"] = True
+		Break
+	End If 
+Loop
+
+If g_dictGlobal["isEx"] = True
+Rem 当当打开失败，退出本流程块
+
+	Return
+End If
+
+Rem 界面点击操作
+
+Try
+Rem 2、根据书名查询
+
+	#icon("@res:3lqahm2a-kc7e-umnh-rf5p-6ldtopc8m9bo.png")
+	Keyboard.InputText({"wnd":[{"cls":"Chrome_WidgetWin_*","title":"*","app":"uibotBrowser"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":{"tagName":"INPUT","attrMap":{"id":"key_S","tag":"INPUT"},"index":0}},g_dictGlobal["bookName"],True,20,10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"sKeyModifiers":[],"sSimulate":"uia","bValidate":False})
+	#icon("@res:jhsggkjt-nek8-g8hn-prju-tsa4ksq379cr.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_*","title":"*","app":"uibotBrowser"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":{"tagName":"INPUT","attrMap":{"tag":"INPUT","type":"button"},"index":3}},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate"})
+	Rem 3、等待查询完毕
+	#icon("@res:vdre36vn-8kmc-lrra-o500-6lbhqkm598qt.png")
+	UiElement.Wait({"wnd":[{"cls":"Chrome_WidgetWin_*","title":"*","app":"uibotBrowser"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":{"tagName":"LI","attrMap":{"aaname":"全部商品","parentid":"J_tab","tag":"LI"},"index":0}},"show",180000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200})
+	Rem 4、价格排序
+	#icon("@res:iq5pc4fi-djvu-q9eb-5tsq-h55j4opau6r7.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_*","title":"*","app":"uibotBrowser"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":{"tagName":"A","attrMap":{"parentid":"go_sort","parentname":"price-nohover","tag":"A"},"index":0}},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate"})
+	Rem 5、等待页面加载
+	hWeb = WebBrowser.BindBrowser("uibotbrowser",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200})
+	WebBrowser.WaitPage(hWeb,"",60000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200})
+	Rem 6、得到最低价格
+	#icon("@res:l5sn1plj-afso-mip3-uuna-eqjdfge220k5.png")
+	g_dictGlobal["ddPrice"] = UiElement.GetValue({"wnd":[{"cls":"Chrome_WidgetWin_*","title":"*","app":"uibotBrowser"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":{"tagName":"SPAN","attrMap":{"css-selector":"#p28544306 > p.price > span.search_now_price", "tag":"SPAN"},"index":0}},{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200})
+	Rem 取金额
+	g_dictGlobal["ddPrice"] = Regex.Find(g_dictGlobal["ddPrice"],"\\d+[.]\\d+")[0]
+    Rem 取链接
+	#icon("@res:r6v3iilu-54ml-8tck-bn73-p4ikupva26kn.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_*","title":"*","app":"uibotBrowser"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":{"tagName":"A","attrMap":{"name":"itemlist-title","tag":"A"},"index":1}},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"uia"})
+	Rem 取网址
+	#icon("@res:qfejeum0-fm5t-ecj4-d2uu-6p4a7pk2vllc.png")
+	UiElement.Wait({"wnd":[{"cls":"Chrome_WidgetWin_*","title":"*","app":"uibotBrowser"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":{"tagName":"A","attrMap":{"id":"part_buy_button","tag":"A"},"index":0}},"show",180000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200})
+	hWeb = WebBrowser.BindBrowser("uibotbrowser",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200})
+	g_dictGlobal["ddLink"] = WebBrowser.GetURL(hWeb,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200})
+	TracePrint g_dictGlobal["ddLink"]
+	
+Catch Ex
+	TracePrint Ex
+	g_dictGlobal["isEx"] = True
+End Try
+
+App.Kill("uibotBrowser.exe")
+
+

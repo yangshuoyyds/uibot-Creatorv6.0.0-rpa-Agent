@@ -1,0 +1,22 @@
+Rem 【流程块注释】作者：JZL
+Rem 【流程块注释】创建时间：2021年09月17日
+Rem 【流程块注释】邮件发送最低价格给对应人员
+Rem 【流程块注释】1、价格对比并发送邮件
+Dim lowerPrice = "" //最低价
+Dim content = "" //邮件正文
+Dim link = "" //最低价商品链接
+Dim platform = "" //平台
+Rem 1、价格对比并发送邮件
+If CNumber(g_dictGlobal["jdPrice"]) > CNumber(g_dictGlobal["ddPrice"])
+	lowerPrice = CStr(g_dictGlobal["ddPrice"])
+	link = CStr(g_dictGlobal["ddLink"])
+	platform = "当当网"
+Else
+	lowerPrice = CStr(g_dictGlobal["jdPrice"])
+	link = CStr(g_dictGlobal["jdLink"])
+	platform = "京东网"
+End If
+content = "最低价："&lowerPrice&"\n"&"链接："&link&"\n"&"平台："&platform
+Rem 发送邮件
+PublicBlock.SendMailSMTP("smtp.163.com", 25, "zlh19960218@163.com", "HRQPVKNACQMQOLYZ", g_dictGlobal["emailAddr"], "书籍："&CStr(g_dictGlobal["bookName"])&"价格", content, "", False)
+

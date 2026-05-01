@@ -1,0 +1,35 @@
+Rem 【流程块注释】作者：JZL
+Rem 【流程块注释】创建时间：2021年09月17日
+Rem 【流程块注释】重试计数模块
+Rem 【流程块注释】1、获取当前时间
+Rem 【流程块注释】2、异常重试进行计数
+Dim sRet = ""
+Dim dTime = ""
+Dim shotsPath = "" //截图本地存储地址
+Rem 1、获取当前时间
+shotsPath = g_dicConfigData["常量设置"]["ExScreenshotsFolderPath"]
+dTime = Time.Now()
+sRet = Time.Format(dTime,"yyyymmddhhmmss")
+TracePrint $BlockInput
+Rem 1、异常重试进行计数
+If g_iCount < g_iRetryNumber
+    Rem 未超过最大重试次数
+
+	g_bRetryStatus = True
+	g_iCount = g_iCount + 1
+Else
+Rem 计数器清零
+	g_iCount = 0 
+    Rem 重试状态初始化
+	g_bRetryStatus = False 
+	Rem 最后一次重试若还是异常，则截取当前屏幕
+    Rem TracePrint(g_dicConfigData["常量设置"]["ExScreenshotsFolderPath"])
+    Rem 企业版中可配合Commander的“上传屏幕截图”命令使用
+Rem Upload.UploadScreenShot("","",true,{"sDescribe":""})
+	
+End If
+
+
+
+
+

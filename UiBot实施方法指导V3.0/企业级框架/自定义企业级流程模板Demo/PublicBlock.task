@@ -1,0 +1,77 @@
+Rem 【流程块注释】作者：JZL
+Rem 【流程块注释】创建时间：2021年09月17日
+Rem 【流程块注释】公共模块，放置函数
+Rem 【流程块注释】1、初始化全局变量（只有Worker的情况下）
+Rem 【流程块注释】2、初始化全局变量（有Commander的情况下）
+Rem 【流程块注释】3、发送smtp邮件
+
+
+Rem 1、初始化全局变量（只有Worker的情况下）
+Rem 功能：初始化全局变量（只有Worker的情况下，项目参数放在本地配置文件Config.ini或Config.xlsx中）
+Rem 入参：无
+Rem 出参：无
+
+Function InitArgByLocal()
+	TracePrint "——————进入InitArgByLocal函数——————"
+	
+	Dim sRet = ""
+	g_iRetryNum = g_iRetryNum + 1
+	TracePrint g_iRetryNum
+	
+	g_dictGlobal = {}
+	Rem 流程异常记录
+	g_dictGlobal["isEx"] = False
+	sRet = INI.Read(@res"Config.ini", "参数值", "maxRetryNum", "3")
+	sRet = CInt(sRet)
+	TracePrint sRet
+	g_dictGlobal["maxRetryNum"] = sRet
+	
+	g_dictGlobal["jdAddr"] = INI.Read(@res"Config.ini", "地址", "京东地址", "https://www.jd.com/")
+	TracePrint g_dictGlobal["jdAddr"]
+	
+	g_dictGlobal["ddAddr"] = INI.Read(@res"Config.ini", "地址", "当当地址", "http://book.dangdang.com/")
+	TracePrint g_dictGlobal["ddAddr"]
+	
+	g_dictGlobal["emailAddr"] = INI.Read(@res"Config.ini", "地址", "邮件地址", "uibot_js@laiye.com")
+	TracePrint g_dictGlobal["emailAddr"]
+	
+	g_dictGlobal["bookName"] = INI.Read(@res"Config.ini", "查询", "书籍名", "rpa uibot")
+	TracePrint g_dictGlobal["bookName"]
+	
+	TracePrint "——————退出InitArgByLocal函数——————"
+End Function
+
+Rem 2、初始化全局变量（有Commander的情况下）
+Rem 功能：初始化全局变量（有Commander的情况下，项目参数放在Commander上）
+Rem 入参：无
+Rem 出参：无
+Function InitArgByCommander()
+	TracePrint "——————进入InitArgByCommander函数——————"
+	
+	TracePrint "——————退出InitArgByCommander函数——————"
+End Function
+
+Rem 3、发送smtp邮件
+Rem 功能：发送smtp邮件
+Rem 入参：server: 邮件服务器IP  port: 邮件服务器端口 passport: 邮箱 password: 邮箱密码 sendAddr: 接收邮箱，多个邮箱用分号隔开 title: 标题 content: 正文 attachment: 附件 ssl: 是否ssl
+Rem 出参：无
+
+Function SendMailSMTP(server,port,passport,password,sendAddr,title,content,attachment,ssl)
+	If Type(sendAddr) = "string"
+		sendAddr = Split(sendAddr,";")
+	End If
+	For Each addr In sendAddr
+	   Rem 发送异常重试2次
+		For idx=0 To 3
+			Try
+				Mail.Send(server,passport,password,addr,title,content,attachment,port,ssl)
+				Break
+			Catch ex
+				Log.Warn("邮件发送异常:"&CStr(ex))
+			End Try
+			Delay(3000)
+		Next
+	Next
+End Function
+
+

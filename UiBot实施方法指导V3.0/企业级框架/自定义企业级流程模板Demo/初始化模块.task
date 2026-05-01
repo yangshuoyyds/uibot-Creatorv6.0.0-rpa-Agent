@@ -1,0 +1,38 @@
+Rem 【流程块注释】作者：JZL
+Rem 【流程块注释】创建时间：2021年09月17日
+Rem 【流程块注释】全局变量参数初始化
+Rem 【流程块注释】1、设置日志等级
+Rem 【流程块注释】2、全局变量初始化
+Rem 【流程块注释】3、判段是否安装office
+Rem 【流程块注释】4、关闭浏览器
+Rem 【流程块注释】5、关闭Excel、wps
+
+
+Dim objExcelWorkBook = ""
+Rem 1、设置日志等级
+
+Log.SetLevel(INI.Read(@res"Config.ini", "参数值", "LogLevel", "2"))
+Rem 2、全局变量初始化
+
+Rem 从本地读取
+PublicBlock.InitArgByLocal()
+
+//从Commander的上读取
+//PublicBlock.InitArgByCommander()
+Rem 3、判段是否安装office
+
+Try    
+	objExcelWorkBook = Excel.OpenExcel(@res"result.xlsx",False)    
+	Excel.CloseExcel(objExcelWorkBook,False)
+Catch Ex
+	g_dictGlobal["isEx"] = True
+	Log.Info("初始化异常，没有安装office")
+End Try
+Rem 4、关闭浏览器
+
+App.Kill("uibotBrowser.exe")
+Rem 5、关闭Excel、wps
+
+App.Kill("excel.exe")
+App.Kill("wps.exe")
+

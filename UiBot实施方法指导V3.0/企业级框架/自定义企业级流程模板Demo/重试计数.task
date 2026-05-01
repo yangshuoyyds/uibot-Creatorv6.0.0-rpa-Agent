@@ -1,0 +1,26 @@
+Dim sRet = ""
+Dim dTime = ""
+Dim shotsPath = "" //截图本地存储地址
+shotsPath = g_dicConfigData["常量设置"]["ExScreenshotsFolderPath"]
+dTime = Time.Now()
+sRet = Time.Format(dTime,"yyyymmddhhmmss")
+TracePrint $BlockInput
+
+If g_iCount < g_iRetryNumber
+	//未超过最大重试次数
+	g_bRetryStatus = True
+	g_iCount = g_iCount + 1
+Else
+	g_iCount = 0 //计数器清零
+	g_bRetryStatus = False //重试状态初始化
+	
+	//最后一次重试若还是异常，则截取当前屏幕
+	//TracePrint(g_dicConfigData["常量设置"]["ExScreenshotsFolderPath"])
+	//企业版中可配合Commander的“上传屏幕截图”命令使用
+	//Upload.UploadScreenShot("","",true,{"sDescribe":""})
+End If
+
+
+
+
+

@@ -1,0 +1,14 @@
+
+Rem 【流程块注释】作者：JZL
+Rem 【流程块注释】创建时间：2021年09月17日
+Rem 【流程块注释】运行环境初始化
+Rem 【流程块注释】1、运行环境初始化
+
+Rem 1、运行环境初始化
+Log.Info("正在初始化目标程序...")
+App.Kill("uibotBrowser.exe")
+App.Kill("excel.exe")
+App.Kill("wps.exe")
+Log.Info("初始化目标程序 结束")
+
+

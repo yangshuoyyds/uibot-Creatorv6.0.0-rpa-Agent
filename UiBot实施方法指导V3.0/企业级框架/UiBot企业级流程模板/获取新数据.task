@@ -1,0 +1,46 @@
+
+Rem 【流程块注释】作者：JZL
+Rem 【流程块注释】创建时间：2021年09月17日
+Rem 【流程块注释】获取数据并赋值给流程图变量g_dicTransactionItem，以供流程图全局使用（子流程化需要输入后使用）
+Rem 【流程块注释】获取数据方式可参考：
+Rem 【流程块注释】1、消费1条Commander中指定的的数据队列消息
+Rem 【流程块注释】2、读取指定Excel表格中的特定行
+Rem 【流程块注释】3、读取指定数据库中的指定字段数据
+Rem 【流程块注释】4、读取指定邮箱中的一份邮件
+Rem 【流程块注释】5、通过webAPI获取返回数据
+Rem 【流程块注释】6、其他
+Rem 进入到此流程块内，初次运行状态就需要更新为False,此条命令不可删除
+g_bFirstRun = False 
+Rem 获取一次新事务的数据前须初始化,此条命令不可删除
+g_dicTransactionItem = {} 
+
+
+Rem 流程块内有2块区域的命令（非Try/Catch块内包含的命令、Catch块内包含的命令），若发生异常，流程块的逻辑走向会由“异常”虚线分支连线指向到其他流程块进行逻辑处理（子流程内同理）
+Rem 流程块内被Try/Catch块内包含的命令，若发生异常（可被称为“业务异常”），只会在Catch块内捕获和处理，不会触发本流程块的“异常”虚线分支连线走向逻辑
+Rem todo something
+
+
+
+Dim arrayRet = ""
+Dim objExcelWorkBook = ""
+
+objExcelWorkBook = Excel.OpenExcel("",True,"Excel","","")
+arrayRet = Excel.ReadRow(objExcelWorkBook,"Sheet1","A1")
+Excel.CloseExcel(objExcelWorkBook,True)
+
+g_dicTransactionItem["TransactionData"] = arrayRet
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

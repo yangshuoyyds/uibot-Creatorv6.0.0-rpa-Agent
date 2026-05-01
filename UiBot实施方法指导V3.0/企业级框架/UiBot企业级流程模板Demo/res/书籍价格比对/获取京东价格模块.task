@@ -1,0 +1,95 @@
+Rem 【流程块注释】作者：JZL
+Rem 【流程块注释】创建时间：2021年09月17日
+Rem 【流程块注释】获取京东价格
+Rem 【流程块注释】1、进入京东网站
+Rem 【流程块注释】2、输入查询条件后查询
+Rem 【流程块注释】3、抓取图书最低价格
+Dim bRet = ""
+Dim hWeb = ""
+Dim relaySign = ""
+
+Rem 1、进入京东网站
+Rem 打开浏览器，设置窗口全屏
+hWeb = WebBrowser.Create("uibotbrowser",g_dictGlobal["jdAddr"],30000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"sBrowserPath":"","sStartArgs":""})
+#icon("@res:ds29taeh-p8of-0nkg-9qg0-80qqct85e2dp.png")
+Window.Show({"wnd":[{"cls":"Chrome_WidgetWin_0","title":"UiBot浏览器","app":"uibotBrowser"}]},"max")
+Rem 判断网页是否打开成功
+#icon("@res:ohq69bd5-jrfi-vgsp-n6mq-srjjda76cjh7.png")
+bRet = UiElement.Exists({"wnd":[{"cls":"Chrome_WidgetWin_*","title":"*","app":"uibotBrowser"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":{"tagName":"I","attrMap":{"parentid":"search","tag":"I"},"index":0}},{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200})
+Rem 重置等待次数
+relaySign = 0
+Rem 累计等待10秒，10秒元素仍不出现判断为异常，跳出本流程块
+Do While bRet = False
+	Delay 1000
+	#icon("@res:aj74tdm9-ig34-td2p-anmr-03lvjopkf784.png")
+	bRet = UiElement.Exists({"wnd":[{"cls":"Chrome_WidgetWin_*","title":"*","app":"uibotBrowser"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":{"tagName":"I","attrMap":{"parentid":"search","tag":"I"},"index":0}},{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200})
+	relaySign = relaySign + 1
+	If relaySign = 10
+		Log.Error("京东网页打开失败")
+		Break 
+	End If 
+Loop
+
+If relaySign = 10
+	Rem 京东打开失败，退出本流程块
+
+	Return
+End If
+
+Rem 界面点击操作
+Rem 2、输入查询条件后查询
+
+#icon("@res:viiole8d-e559-u98k-74mm-fks2c14ujq10.png")
+Keyboard.InputText({"wnd":[{"cls":"Chrome_WidgetWin_*","title":"*","app":"uibotBrowser"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":{"tagName":"INPUT","attrMap":{"tag":"INPUT"},"index":0}},g_dictGlobal["bookName"],True,20,10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"sKeyModifiers":[],"sSimulate":"uia","bValidate":False})
+#icon("@res:fppuejmb-v39j-i6tu-2klg-2sv494ee24a5.png")
+Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_*","title":"*","app":"uibotBrowser"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":{"tagName":"I","attrMap":{"parentid":"search","tag":"I"},"index":0}},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate"})
+Rem 点击查询后，判断页面是否跳转成功
+
+For iNum=1 To 10    
+	Rem 判断元素是否存在,由于网页设计，抓取元素进行判断失效，此处使用图像判断
+	Rem 设置运行环境为分辨率1920*1080，缩放比100% 
+	#icon("@res:ph83b86i-nf0o-h5v0-fbue-3qtald77oq3r.png")
+	bRet = UiElement.Exists({"wnd":[{"cls":"Chrome_WidgetWin_*","title":"*","app":"uibotBrowser"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":{"tagName":"A","attrMap":{"parentid":"logo*","tag":"A"},"index":0}},{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200})
+	TracePrint bRet
+	TracePrint iNum
+    Rem 如果存在，则跳出循环，可以操作界面元素
+
+	If bRet = True
+		Break
+	End If
+    Rem 填入延时时间 
+	
+	Delay (6000)
+Next
+Rem 如果没有发现元素，则代表网络问题，直接退出流程
+
+If bRet = False
+	
+	TracePrint "查询出问题，可能网络错误"
+	Return
+End If
+Rem 3、抓取图书最低价格
+Rem 价格排序
+
+#icon("@res:5obgfr9p-30me-9s9g-ehk2-or0kf30ei76v.png")
+Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_*","title":"*","app":"uibotBrowser"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":{"tagName":"SPAN","attrMap":{"aaname":"价格","parentid":"J_filter","tag":"SPAN"},"index":0}},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate"})
+Rem 等待排序完毕
+#icon("@res:n8idtfm2-f22n-j32q-53cm-i56f0u9anpis.png")
+Image.Wait({"wnd":[{"cls":"Chrome_WidgetWin_0","title":"UiBot浏览器","app":"uibotBrowser"}]},{"height":0,"width":0,"x":0,"y":0},@res"n8idtfm2-f22n-j32q-53cm-i56f0u9anpis.png",0.9,"show",3000,{"bContinueOnError":True,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sMatchType":"ColorMatch"})
+#icon("@res:n8idtfm2-f22n-j32q-53cm-i56f0u9anpis.png")
+Image.Wait({"wnd":[{"cls":"Chrome_WidgetWin_0","title":"UiBot浏览器","app":"uibotBrowser"}]},{"height":0,"width":0,"x":0,"y":0},@res"n8idtfm2-f22n-j32q-53cm-i56f0u9anpis.png",0.9,"hide",60000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sMatchType":"ColorMatch"})
+Rem 抓取最低价
+#icon("@res:8emkvgm4-fn36-lmg3-o53g-33fk8a3oa5c8.png")
+g_dictGlobal["jdPrice"] = UiElement.GetValue({"wnd":[{"cls":"Chrome_WidgetWin_*","title":"*","app":"uibotBrowser"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":{"tagName":"I","attrMap":{"parentid":"J_goodsList","tag":"I"},"index":1}},{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200})
+Rem 获取链接
+#icon("@res:8j5v933o-b668-jqth-4g18-n2mcu41mgesu.png")
+Mouse.Action({     "html": {         "tagName": "em",         "attrMap": {             "css-selector": "body>div>div>div>div>div>div>ul>li>div>div>a>em"         },         "index": 1     },     "wnd": [         {             "app": "uibotBrowser",             "cls": "Chrome_WidgetWin_0",             "title": "*"         },         {             "cls": "Chrome_RenderWidgetHostHWND",             "title": "Chrome Legacy Window"         }     ] },"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"uia"})
+#icon("@res:5rgu330p-3iv5-55ro-c7ag-neua5mi4nbga.png")
+UiElement.Wait({"wnd":[{"cls":"Chrome_WidgetWin_*","title":"*","app":"uibotBrowser"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":{"tagName":"A","attrMap":{"id":"InitCartUrl","tag":"A"},"index":0}},"show",180000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200})
+hWeb = WebBrowser.BindBrowser("uibotbrowser",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200})
+g_dictGlobal["jdLink"] = WebBrowser.GetURL(hWeb,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200})
+TracePrint g_dictGlobal["jdPrice"]
+TracePrint g_dictGlobal["jdLink"]
+App.Kill("uibotBrowser.exe")
+
+

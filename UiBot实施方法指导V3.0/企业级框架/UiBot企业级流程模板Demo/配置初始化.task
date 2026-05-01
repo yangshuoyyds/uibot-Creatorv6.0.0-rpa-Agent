@@ -1,0 +1,84 @@
+
+Rem 【流程块注释】作者：JZL
+Rem 【流程块注释】创建时间：2021年09月17日
+Rem 【流程块注释】全局变量参数初始化
+Rem 【流程块注释】1、Config Excel转字典*/
+Rem 【流程块注释】2、设置日志等级
+Rem 【流程块注释】3、初始化屏幕截图本地保存地址
+Rem 【流程块注释】4、初始化最大重试次数
+Rem 【流程块注释】5、参数打印日志
+Dim msg = "本模板执行前须安装Office2007及其以上或者WPS2016及其以上，请检查是否安装后再次重试。"
+
+Dim config = {}
+Dim arrayRet = ""
+Dim objExcelWorkBook = ""
+Dim iColumsCount = 0
+Dim iRowsCount = 0
+Dim bRet = ""
+Dim logLevel = ""
+Rem 参数初始化
+g_iCount = 0 //重试计数器初始值
+g_iRetryNumber = 2 //默认设置，也可以配合Config.xlsx或其他情况使用
+g_bRetryStatus = False //事务项重试状态初始值
+g_dicTransactionItem = Null //事务项
+g_bFirstRun = True //第一次运行标识
+Dim sheetsName = []
+sheetsName = ["全局设置","常量设置","本地参数"] //默认的3个工作表名称
+
+Rem 1、Config Excel转字典*/
+objExcelWorkBook = Excel.OpenExcel(@res"Data\\Config.xlsx",True,"Excel","","")
+For Each sheetName In sheetsName
+	iRowsCount = Excel.GetRowsCount(objExcelWorkBook,sheetName)
+	If iRowsCount > 1
+		arrayRet = Excel.ReadRange(objExcelWorkBook,sheetName,"A2:B"&iRowsCount)
+		config[sheetName] = {}
+		For Each row In arrayRet
+			If Trim(row[0],"") <> ""
+				config[sheetName][Trim(row[0],"")] = Trim(row[1],"")
+			End If  
+		Next
+	Else
+		Log.Warn("配置文件Config.xlsx的["&sheetName&"]工作表无配置信息！")
+		
+	End If    
+Next
+
+Excel.CloseExcel(objExcelWorkBook,True)
+Rem 2、设置日志等级
+Rem 从本流程目录的res文件夹下读取Data\\Config.xlsx文件，初始化日志级别
+If Not IsNull(config["全局设置"]["LogLevel"])
+	logLevel = CInt(config["全局设置"]["LogLevel"])
+End If
+
+If (IsNull(logLevel)) Or (logLevel = "")
+	logLevel = 2
+End If
+
+If (logLevel < 0 ) Or (logLevel > 3)
+	logLevel = 2
+End If
+Rem 设置日志级别
+Log.SetLevel(logLevel)
+Rem 3、初始化屏幕截图本地保存地址
+
+If Not IsNull(config["常量设置"]["ExScreenshotsFolderPath"])
+	bRet = File.FolderExists(config["常量设置"]["ExScreenshotsFolderPath"])	
+	If Not bRet
+		File.CreateFolder(config["常量设置"]["ExScreenshotsFolderPath"])
+		//TracePrint(config["常量设置"]["ExScreenshotsFolderPath"])
+	End If
+End If
+
+Rem 4、初始化最大重试次数
+If Not IsNull(config["常量设置"]["MaxRetryNumber"])
+	g_iRetryNumber = CInt(config["常量设置"]["MaxRetryNumber"])
+End If
+Rem 流程图变量赋值，可自行扩展后以供主流程图使用(子流程须输入赋值后才可使用)
+g_dicConfigData= config 
+Rem 5、参数打印日志
+
+Log.Info("京东地址: "&CStr(config["本地参数"]["京东地址"]))
+Log.Info("当当地址: "&CStr(config["本地参数"]["当当地址"]))
+Log.Info("邮件地址: "&CStr(config["本地参数"]["邮件地址"]))
+Log.Info("书籍名: "&CStr(config["本地参数"]["书籍名"]))
+

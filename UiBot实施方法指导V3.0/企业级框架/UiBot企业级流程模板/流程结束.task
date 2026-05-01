@@ -1,0 +1,24 @@
+
+Rem 【流程块注释】作者：JZL
+Rem 【流程块注释】创建时间：2021年09月17日
+Rem 【流程块注释】流程结束模块
+Rem 【流程块注释】1、日志输出当前UiBot版本信息及流程运行时长
+
+Rem 系统变量：
+Rem $BlockInput：  上一个实线连接的流程块的Return值，或者上一个虚线连接的流程块抛出的异常
+Rem $UB.InstallPath： UiBot的安装路径
+Rem $UB.Version： UiBot的版本信息，将会得到一个Dict变量，里面包含不同的字段，标明版本信息的不同组成部分。今后还会扩充
+Rem $Flow.WorkPath：当前运行的流程或者子流程的所在路径。如果是流程，就是流程所在路径。如果是子流程，就是子流程所在路径。
+Rem $Flow.ElaspedTime：当前运行的流程或者子流程已经运行的时间，以毫秒为单位。比如 $Flow.ElaspedTime 的值为100，代表从当前流程开始运行，到目前为止已经过了100毫秒。
+
+Rem 1、日志输出当前UiBot版本信息及流程运行时长
+Log.Info("UiBot的版本信息:"&CStr($UB.Version))
+Log.Info("当前流程已运行时长(毫秒):"&CStr($Flow.ElaspedTime))
+Rem 自行扩展，如关闭目标应用程序等操作
+
+Rem 如需向第三方平台推送运行情况(时长、运行结果等)，可自行扩展发起Http请求或其他方式
+
+
+Log.Info("流程已结束！")
+
+
