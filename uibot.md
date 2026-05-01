@@ -15,6 +15,886 @@ version: 1.0.0
 - "怎么读取 Excel？"
 - "如何发送邮件？"
 
+---
+
+## 编程基础知识
+
+### 数据与数据类型
+
+**数据**是计算机处理的基本单位。在RPA中，数据可以是数字、文字、日期等。
+
+**数据类型**决定了数据的性质和可进行的操作：
+
+| 数据类型 | 说明 | 示例 |
+|---------|------|------|
+| **整数型** | 不带小数点的数字 | `100`、`-50`、`&HFF`（十六进制） |
+| **浮点数型** | 带小数点的数字 | `3.14`、`0.01`、`1E-2`（科学计数法） |
+| **布尔型** | 逻辑真假值 | `True`、`False` |
+| **字符串型** | 文本内容 | `"Hello"`、`'来也科技'` |
+| **空值型** | 表示无值 | `Null` |
+| **数组型** | 有序元素集合 | `[1, 2, 3]`、`["a", "b", "c"]` |
+| **字典型** | 键值对集合 | `{"name": "张三", "age": 25}` |
+
+### 变量与常量
+
+**变量**是存储数据的容器，其值可以改变：
+
+```vb
+Dim a = 100              // 定义整数变量
+Dim name = "张三"        // 定义字符串变量
+Dim isValid = True       // 定义布尔变量
+Dim arr = [1, 2, 3]      // 定义数组变量
+```
+
+**常量**的值在定义后不能改变：
+
+```vb
+Const PI = 3.14159       // 定义常量
+Const MAX_COUNT = 100    // 定义常量
+```
+
+**变量命名规则**：
+- 可使用字母、数字、下划线、汉字
+- 不能以数字开头
+- 不区分大小写（`abc` 和 `ABC` 是同一个变量）
+
+### 运算符与表达式
+
+**算术运算符**：
+
+| 运算符 | 说明 | 示例 |
+|--------|------|------|
+| `+` | 加法 | `5 + 3` 结果为 `8` |
+| `-` | 减法/求负 | `5 - 3` 结果为 `2` |
+| `*` | 乘法 | `5 * 3` 结果为 `15` |
+| `/` | 除法 | `6 / 3` 结果为 `2` |
+| `^` | 求幂 | `2 ^ 3` 结果为 `8` |
+| `Mod` | 取余数 | `7 Mod 3` 结果为 `1` |
+
+**比较运算符**：
+
+| 运算符 | 说明 | 示例 |
+|--------|------|------|
+| `=` | 等于 | `5 = 5` 结果为 `True` |
+| `<>` | 不等于 | `5 <> 3` 结果为 `True` |
+| `>` | 大于 | `5 > 3` 结果为 `True` |
+| `<` | 小于 | `3 < 5` 结果为 `True` |
+| `>=` | 大于等于 | `5 >= 5` 结果为 `True` |
+| `<=` | 小于等于 | `3 <= 5` 结果为 `True` |
+
+**逻辑运算符**：
+
+| 运算符 | 说明 | 示例 |
+|--------|------|------|
+| `And` | 逻辑与 | `True And False` 结果为 `False` |
+| `Or` | 逻辑或 | `True Or False` 结果为 `True` |
+| `Not` | 逻辑非 | `Not True` 结果为 `False` |
+
+**字符串运算符**：
+
+| 运算符 | 说明 | 示例 |
+|--------|------|------|
+| `&` | 连接字符串 | `"Hello" & "World"` 结果为 `"HelloWorld"` |
+
+### 条件判断
+
+**If 语句**用于根据条件执行不同的代码：
+
+```vb
+// 单分支
+If Time.Hour() > 18
+    TracePrint("下班时间")
+End If
+
+// 双分支
+If Time.Hour() > 18
+    TracePrint("下班时间")
+Else
+    TracePrint("上班时间")
+End If
+
+// 多分支
+If score >= 90
+    TracePrint("优秀")
+ElseIf score >= 80
+    TracePrint("良好")
+ElseIf score >= 60
+    TracePrint("及格")
+Else
+    TracePrint("不及格")
+End If
+```
+
+**Select Case 语句**用于多值选择：
+
+```vb
+Select Case Time.Month()
+    Case 1, 3, 5, 7, 8, 10, 12
+        DayOfMonth = 31
+    Case 4, 6, 9, 11
+        DayOfMonth = 30
+    Case Else
+        DayOfMonth = 28
+End Select
+```
+
+### 循环
+
+**For 循环**（计次循环）：
+
+```vb
+// 从1循环到100
+For i = 1 To 100
+    TracePrint(i)
+Next
+
+// 指定步长
+For i = 0 To 10 Step 2
+    TracePrint(i)  // 输出 0, 2, 4, 6, 8, 10
+Next
+```
+
+**For Each 循环**（遍历循环）：
+
+```vb
+// 遍历数组
+Dim arr = [10, 20, 30]
+For Each item In arr
+    TracePrint(item)
+Next
+
+// 遍历字典
+Dim dict = {"name": "张三", "age": 25}
+For Each key, value In dict
+    TracePrint(key & ": " & value)
+Next
+```
+
+**Do...Loop 循环**（条件循环）：
+
+```vb
+// 前置条件判断
+Dim i = 1
+Do While i <= 5
+    TracePrint(i)
+    i = i + 1
+Loop
+
+// 后置条件判断
+Dim j = 1
+Do
+    TracePrint(j)
+    j = j + 1
+Loop Until j > 5
+
+// 无限循环（需要用Break跳出）
+Do
+    If 某条件 Then
+        Break  // 跳出循环
+    End If
+Loop
+```
+
+**循环控制语句**：
+
+```vb
+// Break - 跳出循环
+For i = 1 To 10
+    If i = 5 Then
+        Break  // 当i等于5时跳出循环
+    End If
+    TracePrint(i)
+Next
+
+// Continue - 跳过本次循环
+For i = 1 To 10
+    If i Mod 2 = 0 Then
+        Continue  // 跳过偶数
+    End If
+    TracePrint(i)  // 只输出奇数
+Next
+```
+
+### 函数
+
+**函数定义**：
+
+```vb
+// 无参数函数
+Function SayHello()
+    TracePrint("Hello, World!")
+End Function
+
+// 有参数函数
+Function Add(x, y)
+    Return x + y
+End Function
+
+// 带默认值的参数
+Function Greet(name, greeting = "你好")
+    Return greeting & ", " & name
+End Function
+```
+
+**函数调用**：
+
+```vb
+// 调用无参数函数
+SayHello()
+
+// 调用有参数函数
+result = Add(10, 20)
+TracePrint(result)  // 输出 30
+
+// 使用默认参数
+msg1 = Greet("张三")           // 输出 "你好, 张三"
+msg2 = Greet("李四", "早上好")  // 输出 "早上好, 李四"
+```
+
+### 数组操作
+
+```vb
+// 创建数组
+Dim arr = [1, 2, 3, 4, 5]
+
+// 访问元素（索引从0开始）
+TracePrint(arr[0])  // 输出 1
+TracePrint(arr[2])  // 输出 3
+
+// 修改元素
+arr[1] = 20
+TracePrint(arr[1])  // 输出 20
+
+// 多维数组
+Dim matrix = [[1, 2], [3, 4], [5, 6]]
+TracePrint(matrix[0][1])  // 输出 2
+```
+
+### 字典操作
+
+```vb
+// 创建字典
+Dim person = {
+    "name": "张三",
+    "age": 25,
+    "city": "北京"
+}
+
+// 访问元素
+TracePrint(person["name"])  // 输出 "张三"
+
+// 修改元素
+person["age"] = 26
+
+// 添加新元素
+person["job"] = "工程师"
+
+// 遍历字典
+For Each key, value In person
+    TracePrint(key & ": " & value)
+Next
+```
+
+### 异常处理
+
+```vb
+// 基本异常处理
+Try
+    // 可能出错的代码
+    result = 10 / 0
+Catch ex
+    // 处理异常
+    TracePrint("发生错误: " & ex["Message"])
+End Try
+
+// 带重试的异常处理
+Try 3  // 最多重试3次
+    // 可能出错的代码
+    Mouse.Click(@ui"按钮")
+Catch ex
+    TracePrint("重试3次后仍然失败")
+Else
+    TracePrint("操作成功")
+End Try
+
+// 手动抛出异常
+If age < 0 Then
+    Throw "年龄不能为负数"
+End If
+```
+
+### 模块导入
+
+```vb
+// 导入其他流程块
+Import MyModule
+
+// 调用模块中的函数
+MyModule.MyFunction()
+
+// 直接运行模块
+MyModule()
+```
+
+---
+
+## BotScript 语言参考
+
+### 语言概述
+
+BotScript 是来也科技专为 RPA 开发设计的编程语言，具有以下特点：
+- **简单易学**：接近自然语言，易于理解
+- **动态类型**：变量类型可在运行时改变
+- **不区分大小写**：变量名、关键字均不区分大小写
+- **专为 RPA**：针对自动化场景优化设计
+
+### 基本结构
+
+**文件格式**：
+- 纯文本格式，UTF-8 编码
+- 扩展名通常为 `.task`
+- 从第一行开始执行
+
+**语句规则**：
+- 一行一个语句（推荐）
+- 多个语句用冒号 `:` 分隔
+- 折行用反斜杠 `\` 或在逗号、运算符后直接换行
+
+**注释**：
+```vb
+// 单行注释
+
+/*
+多行注释
+可以跨越多行
+*/
+```
+
+### 数据类型详解
+
+**整数型**：
+```vb
+Dim a = 100        // 十进制
+Dim b = &HFF       // 十六进制（255）
+Dim c = &h10       // 十六进制（16）
+```
+
+**浮点数型**：
+```vb
+Dim x = 3.14       // 常规表示
+Dim y = 1E-2       // 科学计数法（0.01）
+Dim z = 2.5e3      // 科学计数法（2500）
+```
+
+**布尔型**：
+```vb
+Dim flag1 = True   // 真
+Dim flag2 = FALSE  // 假（不区分大小写）
+```
+
+**字符串型**：
+```vb
+Dim s1 = "Hello"           // 双引号
+Dim s2 = 'World'           // 单引号
+Dim s3 = "多行
+字符串"                     // 可以直接换行
+
+// 转义字符
+Dim s4 = "制表符:\t换行:\n引号:\"反斜杠:\\"
+
+// 长字符串（无需转义）
+Dim s5 = '''
+这是一个长字符串
+可以包含 "双引号" 和 '单引号'
+无需转义
+'''
+```
+
+**数组型**：
+```vb
+Dim arr1 = [1, 2, 3, 4, 5]                    // 一维数组
+Dim arr2 = ["a", "b", "c"]                    // 字符串数组
+Dim arr3 = [1, "text", True, Null]            // 混合类型数组
+Dim arr4 = [[1, 2], [3, 4], [5, 6]]           // 二维数组
+Dim arr5 = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]  // 三维数组
+```
+
+**字典型**：
+```vb
+Dim dict1 = {"name": "张三", "age": 25}
+Dim dict2 = {
+    "id": 1001,
+    "info": {
+        "city": "北京",
+        "phone": "13800138000"
+    },
+    "tags": ["VIP", "活跃"]
+}
+```
+
+**空值型**：
+```vb
+Dim empty = Null   // 空值（不区分大小写）
+```
+
+### 变量与常量详解
+
+**变量定义**：
+```vb
+Dim a                      // 定义变量，不赋值
+Dim b = 100                // 定义并赋值
+Dim c, d = 200             // 定义多个变量
+Dim e = 1, f = 2, g = 3    // 定义多个变量并赋值
+```
+
+**常量定义**：
+```vb
+Const PI = 3.14159         // 必须在定义时赋值
+Const MAX = 100, MIN = 0   // 定义多个常量
+```
+
+**变量作用域**：
+- **局部变量**：在函数内定义，函数退出时清空
+- **流程块级变量**：在函数外定义，整个流程块运行期间有效
+
+**引用赋值**：
+```vb
+Dim a = [1, 2, 3]
+Dim b = a              // b 是 a 的引用（别名）
+b[0] = 100             // 修改 b 会影响 a
+TracePrint(a[0])       // 输出 100
+
+Dim c = a[0]           // c 是值拷贝
+c = 200                // 修改 c 不影响 a
+TracePrint(a[0])       // 仍然输出 100
+```
+
+### 运算符优先级
+
+从高到低：
+1. `( )` 圆括号
+2. `^` 求幂
+3. `-` 负号（一元）
+4. `*` `/` `Mod` 乘除取余
+5. `+` `-` 加减
+6. `&` 字符串连接
+7. `=` `<>` `<` `>` `<=` `>=` 比较运算符
+8. `Not` 逻辑非
+9. `And` 逻辑与
+10. `Or` 逻辑或
+
+**示例**：
+```vb
+result = 2 + 3 * 4        // 结果为 14（先乘后加）
+result = (2 + 3) * 4      // 结果为 20（括号优先）
+result = 2 ^ 3 * 4        // 结果为 32（先幂后乘）
+```
+
+### 条件分支详解
+
+**If 语句完整语法**：
+```vb
+If 条件1
+    语句块1
+ElseIf 条件2
+    语句块2
+ElseIf 条件3
+    语句块3
+Else
+    语句块4
+End If
+```
+
+**Select Case 语句**：
+```vb
+Select Case 表达式
+    Case 值1, 值2, 值3
+        语句块1
+    Case 值4, 值5
+        语句块2
+    Case Else
+        语句块3
+End Select
+
+// 示例
+Select Case status
+    Case "success", "ok"
+        TracePrint("成功")
+    Case "error", "fail"
+        TracePrint("失败")
+    Case Else
+        TracePrint("未知状态")
+End Select
+```
+
+### 循环详解
+
+**Do...Loop 五种形式**：
+
+1. **前置条件成立则循环**：
+```vb
+Do While 条件
+    语句块
+Loop
+```
+
+2. **前置条件不成立则循环**：
+```vb
+Do Until 条件
+    语句块
+Loop
+```
+
+3. **后置条件成立则循环**：
+```vb
+Do
+    语句块
+Loop While 条件
+```
+
+4. **后置条件不成立则循环**：
+```vb
+Do
+    语句块
+Loop Until 条件
+```
+
+5. **无限循环**：
+```vb
+Do
+    语句块
+    If 退出条件 Then
+        Break
+    End If
+Loop
+```
+
+**For 循环详解**：
+```vb
+// 基本形式
+For i = 1 To 10
+    TracePrint(i)
+Next
+
+// 指定步长
+For i = 10 To 1 Step -1
+    TracePrint(i)  // 倒序输出
+Next
+
+// 浮点数循环
+For x = 0.0 To 1.0 Step 0.1
+    TracePrint(x)
+Next
+```
+
+**For Each 循环详解**：
+```vb
+// 遍历数组（只获取值）
+Dim arr = [10, 20, 30]
+For Each value In arr
+    TracePrint(value)
+Next
+
+// 遍历数组（获取索引和值）
+For Each index, value In arr
+    TracePrint("arr[" & index & "] = " & value)
+Next
+
+// 遍历字典（获取键和值）
+Dim dict = {"a": 1, "b": 2, "c": 3}
+For Each key, value In dict
+    TracePrint(key & " => " & value)
+Next
+```
+
+**循环控制**：
+```vb
+// Break - 立即跳出循环
+For i = 1 To 100
+    If i > 10 Then
+        Break
+    End If
+    TracePrint(i)
+Next
+
+// Continue - 跳过本次循环，继续下一次
+For i = 1 To 10
+    If i Mod 2 = 0 Then
+        Continue  // 跳过偶数
+    End If
+    TracePrint(i)
+Next
+
+// Exit - 结束整个流程
+For i = 1 To 100
+    If 发生严重错误 Then
+        Exit  // 结束整个流程
+    End If
+Next
+```
+
+### 函数详解
+
+**函数定义语法**：
+```vb
+Function 函数名(参数1, 参数2 = 默认值)
+    语句块
+    Return 返回值
+End Function
+```
+
+**参数类型**：
+```vb
+// 必需参数
+Function Add(x, y)
+    Return x + y
+End Function
+
+// 可选参数（带默认值）
+Function Greet(name, greeting = "你好")
+    Return greeting & ", " & name
+End Function
+
+// 混合参数
+Function Calculate(x, y, operator = "+")
+    Select Case operator
+        Case "+"
+            Return x + y
+        Case "-"
+            Return x - y
+        Case "*"
+            Return x * y
+        Case "/"
+            Return x / y
+    End Select
+End Function
+```
+
+**函数调用方式**：
+```vb
+// 方式1：带括号，可获取返回值
+result = Add(10, 20)
+
+// 方式2：不带括号，不关心返回值
+TracePrint "Hello"
+
+// 方式3：函数作为变量
+Dim myFunc = Add
+result = myFunc(5, 3)
+```
+
+**函数参数传递**：
+```vb
+// 简单类型：值传递
+Function ModifyValue(x)
+    x = 100
+End Function
+
+Dim a = 10
+ModifyValue(a)
+TracePrint(a)  // 仍然是 10
+
+// 复合类型：引用传递
+Function ModifyArray(arr)
+    arr[0] = 100
+End Function
+
+Dim b = [1, 2, 3]
+ModifyArray(b)
+TracePrint(b[0])  // 变成了 100
+```
+
+### 异常处理详解
+
+**基本语法**：
+```vb
+Try
+    // 可能出错的代码
+Catch 异常变量
+    // 处理异常
+Else
+    // 没有异常时执行
+End Try
+```
+
+**异常变量结构**：
+```vb
+Try
+    // 可能出错的代码
+    result = 10 / 0
+Catch ex
+    TracePrint("文件: " & ex["File"])
+    TracePrint("行号: " & ex["Line"])
+    TracePrint("信息: " & ex["Message"])
+End Try
+```
+
+**带重试的异常处理**：
+```vb
+Try 5  // 最多重试5次
+    Mouse.Click(@ui"按钮")
+Catch ex
+    TracePrint("重试5次后仍然失败: " & ex["Message"])
+Else
+    TracePrint("操作成功")
+End Try
+```
+
+**手动抛出异常**：
+```vb
+Function Divide(x, y)
+    If y = 0 Then
+        Throw "除数不能为零"
+    End If
+    Return x / y
+End Function
+
+Try
+    result = Divide(10, 0)
+Catch ex
+    TracePrint("捕获异常: " & ex["Message"])
+End Try
+```
+
+**异常处理最佳实践**：
+```vb
+// 针对特定操作使用重试
+Try 3
+    // 界面操作可能因卡顿失败
+    Mouse.Click(@ui"按钮")
+Catch ex
+    // 记录日志
+    TracePrint("点击失败: " & ex["Message"])
+    // 采取备用方案
+    Keyboard.Press("enter")
+End Try
+
+// 资源清理
+Dim objExcel = Null
+Try
+    objExcel = Excel.Open("data.xlsx")
+    // 处理数据
+Catch ex
+    TracePrint("处理失败: " & ex["Message"])
+Finally
+    // 确保关闭Excel（即使出错也执行）
+    If objExcel <> Null Then
+        Excel.Close(objExcel)
+    End If
+End Try
+```
+
+### 模块化编程
+
+**导入模块**：
+```vb
+// 导入模块（文件名为 MyModule.task）
+Import MyModule
+
+// 调用模块中的函数
+result = MyModule.Calculate(10, 20)
+
+// 直接运行模块
+MyModule()
+```
+
+**模块示例**：
+
+文件：`MathUtils.task`
+```vb
+// 定义函数
+Function Add(x, y)
+    Return x + y
+End Function
+
+Function Multiply(x, y)
+    Return x * y
+End Function
+
+// 模块级变量
+Dim PI = 3.14159
+```
+
+文件：`Main.task`
+```vb
+// 导入模块
+Import MathUtils
+
+// 使用模块函数
+result1 = MathUtils.Add(10, 20)
+result2 = MathUtils.Multiply(5, 6)
+
+// 访问模块变量
+TracePrint("PI = " & MathUtils.PI)
+```
+
+### 编程技巧
+
+**智能等待**：
+```vb
+// 等待元素出现
+Dim maxWait = 30
+Dim waited = 0
+Do While Not UiElement.Exists(@ui"目标元素", 1)
+    waited = waited + 1
+    If waited >= maxWait Then
+        Throw "等待超时"
+    End If
+    Delay(1000)
+Loop
+```
+
+**批量操作**：
+```vb
+// 使用数组批量处理
+Dim tasks = ["任务1", "任务2", "任务3"]
+For Each task In tasks
+    Try
+        ProcessTask(task)
+        TracePrint("完成: " & task)
+    Catch ex
+        TracePrint("失败: " & task & " - " & ex["Message"])
+        Continue
+    End Try
+Next
+```
+
+**日志记录**：
+```vb
+Function WriteLog(message)
+    Dim timestamp = Time.Format(Time.Now(), "yyyy-MM-dd HH:mm:ss")
+    Dim logFile = "C:\Logs\automation.log"
+    Dim logLine = "[" & timestamp & "] " & message & "\n"
+    File.Append(logFile, logLine, "utf-8")
+    TracePrint(message)
+End Function
+
+// 使用日志
+WriteLog("流程开始")
+Try
+    // 执行任务
+    WriteLog("任务执行成功")
+Catch ex
+    WriteLog("任务失败: " & ex["Message"])
+End Try
+WriteLog("流程结束")
+```
+
+**配置管理**：
+```vb
+// 从配置文件读取设置
+Dim configFile = "config.json"
+Dim configText = File.Read(configFile, "utf-8")
+Dim config = JSON.Parse(configText)
+
+// 使用配置
+Dim serverUrl = config["server"]["url"]
+Dim timeout = config["server"]["timeout"]
+Dim username = config["credentials"]["username"]
+```
+
+---
+
 ## 命令分类
 
 1. **基本命令** - 数据转换、变量操作、流程控制

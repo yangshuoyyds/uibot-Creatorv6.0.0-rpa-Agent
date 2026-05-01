@@ -873,6 +873,935 @@ TracePrint("结果已保存到: " & sResultFile)
 **成功案例**：
 某企业的财务报销业务特点是审核点极多（将近100个），审核点复杂，存在多票据交叉复核，人工验证出错率极高。通过RPA+AI重塑业务流程，企业降低了填单环节的人工输入成本，减少了审单环节的出错率。
 
+### 示例11：通用卡证识别（Mage AI）
+
+**业务场景**：
+通用卡证识别能够识别身份证、银行卡、驾驶证、营业执照等20种常见卡证，并从中抽取出核心字段值。卡证识别可以广泛应用于企业和个人的资质审核，包括但不限于银行开户、尽职调查、一网通办等场景。
+
+**核心特点**：
+- ✅ **种类丰富**：识别身份证、营业执照、驾驶证、行驶证、户口本、银行卡、护照、结婚证、车辆登记证、车辆合格证、港澳台居民来往大陆通行证、开户许可证、组织机构代码证、房产证、不动产证、军官证、出生证明、临时身份证、社保卡、外国人永久居留证等20种卡证
+- ✅ **双面识别**：支持卡证正反双面识别，自动判断正面反面
+
+**支持的卡证类型（20种）**：
+
+| 序号 | 卡证类型 | type_key | 说明 |
+|------|---------|----------|------|
+| 1 | 身份证 | id_card | 支持正反面识别 |
+| 2 | 营业执照 | business_license | 支持副本和电子执照 |
+| 3 | 驾驶证 | drvlicense | 支持主页和副页 |
+| 4 | 行驶证 | vehlicense | 支持主页和副页 |
+| 5 | 户口本 | family_register | 支持户主页和成员页 |
+| 6 | 银行卡 | bank_card | 识别卡号、持有人等 |
+| 7 | 护照 | passport | 支持中国护照 |
+| 8 | 结婚证 | marriage_certificate | 识别双方信息 |
+| 9 | 车辆登记证 | vehicle_registration_certificate | 车辆详细信息 |
+| 10 | 车辆合格证 | vehicle_certificate | 车辆出厂信息 |
+| 11 | 港澳台通行证 | mainland_travel_permit_hk_macao_taiwan | 往来大陆通行证 |
+| 12 | 开户许可证 | opening_license | 银行开户信息 |
+| 13 | 组织机构代码证 | organization_certificate | 机构代码信息 |
+| 14 | 房产证 | house_property_owner_ship | 房产权属信息 |
+| 15 | 不动产证 | real_estate | 不动产权信息 |
+| 16 | 军官证 | military_certificate | 军人身份证明 |
+| 17 | 出生证明 | birth_certificate | 新生儿出生信息 |
+| 18 | 临时身份证 | temporary_id_card | 临时身份证明 |
+| 19 | 社保卡 | social_security_cards | 社会保障卡 |
+| 20 | 外国人永久居留证 | permanent_residence_permit | 外籍人士居留证 |
+
+**识别方式**：
+- 方式1：屏幕识别 - 识别屏幕上显示的卡证
+- 方式2：图片识别 - 识别本地图片文件中的卡证
+- 方式3：PDF识别 - 识别PDF文件中的卡证（支持多页）
+
+#### 方式1：屏幕卡证识别
+
+```vb
+// 屏幕卡证识别示例 - 识别屏幕上显示的身份证
+Dim iPID = ""
+Dim config = {
+    "Pubkey": "your_pubkey",
+    "Secret": "your_secret",
+    "Url": "https://mage.uibot.com.cn"
+}
+
+TracePrint("=== 开始屏幕卡证识别 ===")
+
+// 打开身份证图片（使用系统默认图片查看器）
+iPID = App.Start("C:\Cards\id_card.jpg", "0", "1")
+Delay(2000)
+
+Try
+    // 使用 Mage.ScreenOCRCard 识别屏幕上的卡证
+    With Mage.ScreenOCRCard(@ui"图片查看窗口", Null, config, 30000)
+        // 获取卡证类型
+        Dim sCardType = .ExtractCardType()
+        TracePrint("识别到卡证类型: " & sCardType)
+        
+        // 根据不同卡证类型提取字段
+        Select Case .ExtractCardType()
+            Case Alias("id_card", "身份证")
+                TracePrint("--- 身份证信息 ---")
+                Dim sName = .ExtractCardInfo("id_card", "name")
+                Dim sSex = .ExtractCardInfo("id_card", "sex")
+                Dim sNationality = .ExtractCardInfo("id_card", "nationality")
+                Dim sBirth = .ExtractCardInfo("id_card", "birth")
+                Dim sAddress = .ExtractCardInfo("id_card", "address")
+                Dim sIdNumber = .ExtractCardInfo("id_card", "id_number")
+                Dim sIssueAuthority = .ExtractCardInfo("id_card", "issue_authority")
+                Dim sValidateDate = .ExtractCardInfo("id_card", "validate_date")
+                
+                TracePrint("姓名: " & sName)
+                TracePrint("性别: " & sSex)
+                TracePrint("民族: " & sNationality)
+                TracePrint("出生: " & sBirth)
+                TracePrint("地址: " & sAddress)
+                TracePrint("身份证号: " & sIdNumber)
+                TracePrint("签发机关: " & sIssueAuthority)
+                TracePrint("有效期限: " & sValidateDate)
+                
+            Case Alias("business_license", "营业执照")
+                TracePrint("--- 营业执照信息 ---")
+                Dim sCreditCode = .ExtractCardInfo("business_license", "BizLicenseCreditCode")
+                Dim sCompanyName = .ExtractCardInfo("business_license", "BizLicenseCompanyName")
+                Dim sOwnerName = .ExtractCardInfo("business_license", "BizLicenseOwnerName")
+                Dim sRegCapital = .ExtractCardInfo("business_license", "BizLicenseRegCapital")
+                Dim sStartTime = .ExtractCardInfo("business_license", "BizLicenseStartTime")
+                
+                TracePrint("统一社会信用代码: " & sCreditCode)
+                TracePrint("企业名称: " & sCompanyName)
+                TracePrint("法定代表人: " & sOwnerName)
+                TracePrint("注册资本: " & sRegCapital)
+                TracePrint("成立日期: " & sStartTime)
+                
+            Case Alias("bank_card", "银行卡")
+                TracePrint("--- 银行卡信息 ---")
+                Dim sCardNumber = .ExtractCardInfo("bank_card", "card_number")
+                Dim sHolderName = .ExtractCardInfo("bank_card", "holder_name")
+                Dim sIssuer = .ExtractCardInfo("bank_card", "issuer")
+                Dim sValidate = .ExtractCardInfo("bank_card", "validate")
+                
+                TracePrint("卡号: " & sCardNumber)
+                TracePrint("持卡人: " & sHolderName)
+                TracePrint("发卡行: " & sIssuer)
+                TracePrint("有效期: " & sValidate)
+                
+            Case Else
+                TracePrint("识别到其他类型卡证: " & sCardType)
+        End Select
+    End With
+    
+    TracePrint("=== 屏幕卡证识别完成 ===")
+    
+Catch ex
+    TracePrint("识别失败: " & ex.Message)
+End Try
+
+// 关闭图片查看器
+App.Close(iPID)
+```
+
+#### 方式2：图片卡证识别
+
+```vb
+// 图片卡证识别示例 - 识别本地图片文件中的身份证
+Dim imagePath = "C:\Cards\id_card.jpg"
+Dim config = {
+    "Pubkey": "your_pubkey",
+    "Secret": "your_secret",
+    "Url": "https://mage.uibot.com.cn"
+}
+
+TracePrint("=== 开始图片卡证识别 ===")
+TracePrint("图片路径: " & imagePath)
+
+Try
+    // 使用 Mage.ImageOCRCard 识别图片中的卡证
+    With Mage.ImageOCRCard(imagePath, config, 30000)
+        // 获取卡证类型
+        Dim sCardType = .ExtractCardType()
+        TracePrint("识别到卡证类型: " & sCardType)
+        
+        // 提取身份证信息
+        If sCardType = "id_card" Or sCardType = "身份证" Then
+            TracePrint("--- 身份证详细信息 ---")
+            
+            // 基本信息
+            Dim sName = .ExtractCardInfo("id_card", "name")
+            Dim sSex = .ExtractCardInfo("id_card", "sex")
+            Dim sNationality = .ExtractCardInfo("id_card", "nationality")
+            Dim sBirth = .ExtractCardInfo("id_card", "birth")
+            Dim sAddress = .ExtractCardInfo("id_card", "address")
+            Dim sIdNumber = .ExtractCardInfo("id_card", "id_number")
+            
+            // 证件信息
+            Dim sIssueAuthority = .ExtractCardInfo("id_card", "issue_authority")
+            Dim sValidateDate = .ExtractCardInfo("id_card", "validate_date")
+            
+            // 输出识别结果
+            TracePrint("姓名: " & sName)
+            TracePrint("性别: " & sSex)
+            TracePrint("民族: " & sNationality)
+            TracePrint("出生: " & sBirth)
+            TracePrint("地址: " & sAddress)
+            TracePrint("身份证号: " & sIdNumber)
+            TracePrint("签发机关: " & sIssueAuthority)
+            TracePrint("有效期限: " & sValidateDate)
+            
+            // 保存识别结果到 Excel
+            Dim objExcel = Excel.Create(True, "")
+            Excel.SetCell(objExcel, "A1", "字段名称")
+            Excel.SetCell(objExcel, "B1", "识别结果")
+            Excel.SetCell(objExcel, "A2", "姓名")
+            Excel.SetCell(objExcel, "B2", sName)
+            Excel.SetCell(objExcel, "A3", "性别")
+            Excel.SetCell(objExcel, "B3", sSex)
+            Excel.SetCell(objExcel, "A4", "民族")
+            Excel.SetCell(objExcel, "B4", sNationality)
+            Excel.SetCell(objExcel, "A5", "出生")
+            Excel.SetCell(objExcel, "B5", sBirth)
+            Excel.SetCell(objExcel, "A6", "地址")
+            Excel.SetCell(objExcel, "B6", sAddress)
+            Excel.SetCell(objExcel, "A7", "身份证号")
+            Excel.SetCell(objExcel, "B7", sIdNumber)
+            Excel.SetCell(objExcel, "A8", "签发机关")
+            Excel.SetCell(objExcel, "B8", sIssueAuthority)
+            Excel.SetCell(objExcel, "A9", "有效期限")
+            Excel.SetCell(objExcel, "B9", sValidateDate)
+            
+            Dim sResultFile = "C:\Cards\id_card_result_" & Time.Format(Time.Now(), "yyyyMMdd_HHmmss") & ".xlsx"
+            Excel.SaveAs(objExcel, sResultFile)
+            Excel.Close(objExcel)
+            TracePrint("识别结果已保存到: " & sResultFile)
+        Else
+            TracePrint("当前示例仅处理身份证，识别到的类型为: " & sCardType)
+        End If
+    End With
+    
+    TracePrint("=== 图片卡证识别完成 ===")
+    
+Catch ex
+    TracePrint("识别失败: " & ex.Message)
+End Try
+```
+
+#### 方式3：PDF卡证识别
+
+```vb
+// PDF卡证识别示例 - 识别PDF文件中的卡证（支持多页）
+Dim config = {
+    "Pubkey": "your_pubkey",
+    "Secret": "your_secret",
+    "Url": "https://mage.uibot.com.cn"
+}
+Dim pdfPath = "C:\Cards\cards.pdf"
+Dim password = ""  // PDF密码，无密码则为空字符串
+Dim readAll = True  // True: 识别所有页，False: 识别指定页
+Dim pages = "1-3"  // 指定页码范围，如 "1-3" 或 "1,3,5"
+Dim interval = 1000  // 每页识别间隔（毫秒）
+Dim timeout = 60
+
+TracePrint("=== 开始PDF卡证识别 ===")
+TracePrint("PDF路径: " & pdfPath)
+
+Try
+    Dim iPageCount = 0
+    Dim arrResults = []  // 存储所有识别结果
+    
+    // 使用 Mage.PDFOCRCard 识别PDF中的卡证
+    With Each Mage.PDFOCRCard(config, pdfPath, password, readAll, pages, interval, timeout)
+        iPageCount = iPageCount + 1
+        TracePrint("--- 第 " & iPageCount & " 页 ---")
+        
+        // 获取卡证类型
+        Dim sCardType = .ExtractCardType()
+        TracePrint("卡证类型: " & sCardType)
+        
+        // 创建结果对象
+        Dim objResult = {
+            "page": iPageCount,
+            "type": sCardType,
+            "data": {}
+        }
+        
+        // 根据卡证类型提取信息
+        Select Case .ExtractCardType()
+            Case Alias("id_card", "身份证")
+                objResult["data"]["name"] = .ExtractCardInfo("id_card", "name")
+                objResult["data"]["sex"] = .ExtractCardInfo("id_card", "sex")
+                objResult["data"]["nationality"] = .ExtractCardInfo("id_card", "nationality")
+                objResult["data"]["birth"] = .ExtractCardInfo("id_card", "birth")
+                objResult["data"]["address"] = .ExtractCardInfo("id_card", "address")
+                objResult["data"]["id_number"] = .ExtractCardInfo("id_card", "id_number")
+                
+                TracePrint("姓名: " & objResult["data"]["name"])
+                TracePrint("性别: " & objResult["data"]["sex"])
+                TracePrint("民族: " & objResult["data"]["nationality"])
+                TracePrint("身份证号: " & objResult["data"]["id_number"])
+                
+            Case Alias("business_license", "营业执照")
+                objResult["data"]["credit_code"] = .ExtractCardInfo("business_license", "BizLicenseCreditCode")
+                objResult["data"]["company_name"] = .ExtractCardInfo("business_license", "BizLicenseCompanyName")
+                objResult["data"]["owner_name"] = .ExtractCardInfo("business_license", "BizLicenseOwnerName")
+                objResult["data"]["reg_capital"] = .ExtractCardInfo("business_license", "BizLicenseRegCapital")
+                
+                TracePrint("企业名称: " & objResult["data"]["company_name"])
+                TracePrint("统一社会信用代码: " & objResult["data"]["credit_code"])
+                TracePrint("法定代表人: " & objResult["data"]["owner_name"])
+                
+            Case Alias("drvlicense", "驾驶证")
+                objResult["data"]["name"] = .ExtractCardInfo("drvlicense", "name")
+                objResult["data"]["license_number"] = .ExtractCardInfo("drvlicense", "driving_license_main_number")
+                objResult["data"]["drive_type"] = .ExtractCardInfo("drvlicense", "drive_type")
+                objResult["data"]["valid_period"] = .ExtractCardInfo("drvlicense", "valid_period")
+                
+                TracePrint("姓名: " & objResult["data"]["name"])
+                TracePrint("证号: " & objResult["data"]["license_number"])
+                TracePrint("准驾车型: " & objResult["data"]["drive_type"])
+                
+            Case Else
+                TracePrint("其他类型卡证，请根据需要添加处理逻辑")
+        End Select
+        
+        // 添加到结果数组
+        Array.Push(arrResults, objResult)
+    End With
+    
+    TracePrint("=== PDF卡证识别完成 ===")
+    TracePrint("共识别 " & iPageCount & " 页卡证")
+    
+    // 将所有结果导出到 Excel
+    If Array.Length(arrResults) > 0 Then
+        Dim objExcel = Excel.Create(True, "")
+        
+        // 写入表头
+        Excel.SetCell(objExcel, "A1", "页码")
+        Excel.SetCell(objExcel, "B1", "卡证类型")
+        Excel.SetCell(objExcel, "C1", "关键信息")
+        
+        // 写入数据
+        Dim iRow = 2
+        For Each objResult In arrResults
+            Excel.SetCell(objExcel, "A" & iRow, objResult["page"])
+            Excel.SetCell(objExcel, "B" & iRow, objResult["type"])
+            
+            // 将数据对象转换为字符串
+            Dim sInfo = ""
+            For Each sKey In objResult["data"]
+                sInfo = sInfo & sKey & ": " & objResult["data"][sKey] & "; "
+            Next
+            Excel.SetCell(objExcel, "C" & iRow, sInfo)
+            
+            iRow = iRow + 1
+        Next
+        
+        // 保存文件
+        Dim sResultFile = "C:\Cards\pdf_cards_result_" & Time.Format(Time.Now(), "yyyyMMdd_HHmmss") & ".xlsx"
+        Excel.SaveAs(objExcel, sResultFile)
+        Excel.Close(objExcel)
+        TracePrint("所有识别结果已保存到: " & sResultFile)
+    End If
+    
+Catch ex
+    TracePrint("识别失败: " & ex.Message)
+End Try
+```
+
+#### 批量卡证识别与分类
+
+```vb
+// 批量卡证识别与分类示例
+Dim sFolderPath = "C:\Cards\Batch"  // 卡证图片文件夹
+Dim arrFiles = File.GetFileList(sFolderPath, "*.jpg|*.png|*.jpeg", False)
+Dim config = {
+    "Pubkey": "your_pubkey",
+    "Secret": "your_secret",
+    "Url": "https://mage.uibot.com.cn"
+}
+
+TracePrint("=== 开始批量卡证识别 ===")
+TracePrint("待识别文件数: " & Array.Length(arrFiles))
+
+// 创建分类统计
+Dim objStats = {
+    "id_card": 0,
+    "business_license": 0,
+    "bank_card": 0,
+    "drvlicense": 0,
+    "other": 0
+}
+
+// 创建 Excel 汇总表
+Dim objExcel = Excel.Create(True, "")
+Excel.SetCell(objExcel, "A1", "序号")
+Excel.SetCell(objExcel, "B1", "文件名")
+Excel.SetCell(objExcel, "C1", "卡证类型")
+Excel.SetCell(objExcel, "D1", "关键信息")
+
+Dim iRow = 2
+Dim iSuccess = 0
+Dim iFailed = 0
+
+For Each sFile In arrFiles
+    TracePrint("处理文件: " & File.GetName(sFile))
+    
+    Try
+        With Mage.ImageOCRCard(sFile, config, 30000)
+            Dim sType = .ExtractCardType()
+            Dim sInfo = ""
+            
+            // 根据类型提取关键信息
+            Select Case sType
+                Case Alias("id_card", "身份证")
+                    objStats["id_card"] = objStats["id_card"] + 1
+                    sInfo = "姓名: " & .ExtractCardInfo("id_card", "name") & _
+                            ", 身份证号: " & .ExtractCardInfo("id_card", "id_number")
+                    
+                Case Alias("business_license", "营业执照")
+                    objStats["business_license"] = objStats["business_license"] + 1
+                    sInfo = "企业: " & .ExtractCardInfo("business_license", "BizLicenseCompanyName") & _
+                            ", 信用代码: " & .ExtractCardInfo("business_license", "BizLicenseCreditCode")
+                    
+                Case Alias("bank_card", "银行卡")
+                    objStats["bank_card"] = objStats["bank_card"] + 1
+                    sInfo = "卡号: " & .ExtractCardInfo("bank_card", "card_number") & _
+                            ", 持卡人: " & .ExtractCardInfo("bank_card", "holder_name")
+                    
+                Case Alias("drvlicense", "驾驶证")
+                    objStats["drvlicense"] = objStats["drvlicense"] + 1
+                    sInfo = "姓名: " & .ExtractCardInfo("drvlicense", "name") & _
+                            ", 准驾车型: " & .ExtractCardInfo("drvlicense", "drive_type")
+                    
+                Case Else
+                    objStats["other"] = objStats["other"] + 1
+                    sInfo = "其他类型"
+            End Select
+            
+            // 写入 Excel
+            Excel.SetCell(objExcel, "A" & iRow, iRow - 1)
+            Excel.SetCell(objExcel, "B" & iRow, File.GetName(sFile))
+            Excel.SetCell(objExcel, "C" & iRow, sType)
+            Excel.SetCell(objExcel, "D" & iRow, sInfo)
+            
+            iRow = iRow + 1
+            iSuccess = iSuccess + 1
+            TracePrint("识别成功: " & sType)
+        End With
+        
+    Catch ex
+        iFailed = iFailed + 1
+        TracePrint("识别失败: " & ex.Message)
+    End Try
+    
+    Delay(500)  // 避免请求过快
+Next
+
+// 保存汇总表
+Dim sResultFile = "C:\Cards\batch_result_" & Time.Format(Time.Now(), "yyyyMMdd_HHmmss") & ".xlsx"
+Excel.SaveAs(objExcel, sResultFile)
+Excel.Close(objExcel)
+
+// 输出统计信息
+TracePrint("=== 批量识别完成 ===")
+TracePrint("总文件数: " & Array.Length(arrFiles))
+TracePrint("成功: " & iSuccess & ", 失败: " & iFailed)
+TracePrint("--- 卡证类型统计 ---")
+TracePrint("身份证: " & objStats["id_card"])
+TracePrint("营业执照: " & objStats["business_license"])
+TracePrint("银行卡: " & objStats["bank_card"])
+TracePrint("驾驶证: " & objStats["drvlicense"])
+TracePrint("其他: " & objStats["other"])
+TracePrint("结果已保存到: " & sResultFile)
+```
+
+**使用说明**：
+1. **配置要求**：需要配置 Mage AI 的 Pubkey 和 Secret（在来也科技平台申请）
+2. **卡证类型**：支持20种卡证类型，详见上方表格中的 type_key
+3. **字段提取**：不同卡证类型支持的字段不同，常见字段包括：
+   - 身份证：name（姓名）、sex（性别）、nationality（民族）、birth（出生）、address（地址）、id_number（身份证号）、issue_authority（签发机关）、validate_date（有效期限）
+   - 营业执照：BizLicenseCreditCode（统一社会信用代码）、BizLicenseCompanyName（企业名称）、BizLicenseOwnerName（法定代表人）、BizLicenseRegCapital（注册资本）、BizLicenseStartTime（成立日期）
+   - 银行卡：card_number（卡号）、holder_name（持卡人）、issuer（发卡行）、validate（有效期）
+   - 驾驶证：name（姓名）、driving_license_main_number（证号）、drive_type（准驾车型）、valid_period（有效期限）
+4. **性能优化**：
+   - 建议添加适当的延迟（500-1000ms）避免请求过快
+   - 对于大批量识别，建议分批处理并保存中间结果
+   - PDF识别时可以指定页码范围，避免处理不必要的页面
+5. **错误处理**：建议使用 Try-Catch 包裹识别代码，处理网络异常、识别失败等情况
+6. **参考文档**：完整的字段列表和API说明请参考 [来也IDP官方文档](https://documents.laiye.com/idp-mage/docs/OCR/ocr_card)
+
+**成功案例**：
+某医药企业的业务系统中维护了几万个客户，每个客户会提交事业单位法人证、医疗机构执业许可证等材料，以证明自己有采购疫苗的资质。新客户直接审核，老客户每年会进行年审。审核的业务流程主要是用卡证上识别的关键信息和业务系统中填写的字段进行比对。涉及到6个页面、3种客户类型，每个客户类型审核逻辑各不相同，引入RPA+AI能够极大的减少工作量、提升审核效率、减少犯错几率。
+
+### 示例12：验证码识别（Mage AI）
+
+**业务场景**：
+验证码是RPA+AI场景中使用最高频的AI应用。RPA能够模拟人工进行鼠标键盘的操作，将办公流程自动化。通常在RPA操作业务系统的过程中，会遇到需要输入验证码的情况。比如：登录银行网银下载流水、进入增值税发票查验平台验证发票的真实性，都需要填写验证码信息。验证码识别能力可以识别纯英文、纯数字、英文数字组合、四则运算、滑块等验证码图片，让流程全自动化，不再需要人工介入。
+
+**核心特点**：
+- ✅ **支持多种验证码类型**：纯英文、纯数字、英文数字组合、四则运算、滑块验证码等
+- ✅ **识别速度快**：响应速度快，识别结果秒回
+- ✅ **高准确率**：针对常见验证码类型进行了优化训练
+
+**识别方式**：
+- 方式1：屏幕验证码识别 - 识别屏幕上显示的验证码
+- 方式2：图片验证码识别 - 识别本地图片文件中的验证码
+
+#### 方式1：屏幕验证码识别
+
+```vb
+// 屏幕验证码识别示例 - 识别网页上的验证码并自动填写
+Dim hWeb = ""
+Dim sVerifyCode = ""
+Dim config = {
+    "Pubkey": "your_pubkey",
+    "Secret": "your_secret",
+    "Url": "https://mage.uibot.com.cn"
+}
+
+TracePrint("=== 开始屏幕验证码识别 ===")
+
+Try
+    // 打开需要登录的网页（以交通银行企业网银为例）
+    TracePrint("打开登录页面...")
+    hWeb = WebBrowser.Create("chrome", "https://ebank.95559.com.cn/CEBS/cebs/logon.do", 30000)
+    Delay(3000)
+    
+    // 使用 Mage.ScreenOCRVerifyCode 识别屏幕上的验证码
+    TracePrint("识别验证码...")
+    sVerifyCode = Mage.ScreenOCRVerifyCode(@ui"验证码图片元素", Null, config, 30000)
+    
+    TracePrint("识别到验证码: " & sVerifyCode)
+    
+    // 自动填写验证码
+    If sVerifyCode <> "" Then
+        Keyboard.InputText(@ui"验证码输入框", sVerifyCode, True, False)
+        TracePrint("验证码已自动填写")
+        
+        // 继续填写其他登录信息
+        Keyboard.InputText(@ui"用户名输入框", "your_username", True, False)
+        Keyboard.InputPwd(@ui"密码输入框", "your_password", True)
+        
+        // 点击登录按钮
+        Mouse.Click(@ui"登录按钮")
+        Delay(3000)
+        
+        TracePrint("登录流程完成")
+    Else
+        TracePrint("验证码识别失败，请重试")
+    End If
+    
+    TracePrint("=== 屏幕验证码识别完成 ===")
+    
+Catch ex
+    TracePrint("识别失败: " & ex.Message)
+Finally
+    // 可选：关闭浏览器
+    // WebBrowser.Close(hWeb)
+End Try
+```
+
+#### 方式2：图片验证码识别
+
+```vb
+// 图片验证码识别示例 - 识别本地图片文件中的验证码
+Dim imagePath = "C:\Captcha\verify_code.png"
+Dim config = {
+    "Pubkey": "your_pubkey",
+    "Secret": "your_secret",
+    "Url": "https://mage.uibot.com.cn"
+}
+
+TracePrint("=== 开始图片验证码识别 ===")
+TracePrint("图片路径: " & imagePath)
+
+Try
+    // 使用 Mage.ImageOCRVerifyCode 识别图片中的验证码
+    Dim sVerifyCode = Mage.ImageOCRVerifyCode(imagePath, config, 30000)
+    
+    If sVerifyCode <> "" Then
+        TracePrint("识别到验证码: " & sVerifyCode)
+        
+        // 保存识别结果到文本文件
+        Dim sResultFile = "C:\Captcha\verify_code_result.txt"
+        File.Write(sResultFile, "验证码识别结果: " & sVerifyCode, "utf-8")
+        TracePrint("识别结果已保存到: " & sResultFile)
+    Else
+        TracePrint("验证码识别失败")
+    End If
+    
+    TracePrint("=== 图片验证码识别完成 ===")
+    
+Catch ex
+    TracePrint("识别失败: " & ex.Message)
+End Try
+```
+
+#### 批量验证码识别
+
+```vb
+// 批量验证码识别示例 - 识别文件夹中的多个验证码图片
+Dim sFolderPath = "C:\Captcha\Batch"
+Dim arrFiles = File.GetFileList(sFolderPath, "*.png|*.jpg|*.jpeg", False)
+Dim config = {
+    "Pubkey": "your_pubkey",
+    "Secret": "your_secret",
+    "Url": "https://mage.uibot.com.cn"
+}
+
+TracePrint("=== 开始批量验证码识别 ===")
+TracePrint("待识别文件数: " & Array.Length(arrFiles))
+
+// 创建 Excel 汇总表
+Dim objExcel = Excel.Create(True, "")
+Excel.SetCell(objExcel, "A1", "序号")
+Excel.SetCell(objExcel, "B1", "文件名")
+Excel.SetCell(objExcel, "C1", "识别结果")
+Excel.SetCell(objExcel, "D1", "识别状态")
+
+Dim iRow = 2
+Dim iSuccess = 0
+Dim iFailed = 0
+
+For Each sFile In arrFiles
+    TracePrint("处理文件: " & File.GetName(sFile))
+    
+    Try
+        // 识别验证码
+        Dim sVerifyCode = Mage.ImageOCRVerifyCode(sFile, config, 30000)
+        
+        If sVerifyCode <> "" Then
+            // 写入 Excel
+            Excel.SetCell(objExcel, "A" & iRow, iRow - 1)
+            Excel.SetCell(objExcel, "B" & iRow, File.GetName(sFile))
+            Excel.SetCell(objExcel, "C" & iRow, sVerifyCode)
+            Excel.SetCell(objExcel, "D" & iRow, "成功")
+            
+            iSuccess = iSuccess + 1
+            TracePrint("识别成功: " & sVerifyCode)
+        Else
+            Excel.SetCell(objExcel, "A" & iRow, iRow - 1)
+            Excel.SetCell(objExcel, "B" & iRow, File.GetName(sFile))
+            Excel.SetCell(objExcel, "C" & iRow, "")
+            Excel.SetCell(objExcel, "D" & iRow, "失败")
+            
+            iFailed = iFailed + 1
+            TracePrint("识别失败")
+        End If
+        
+        iRow = iRow + 1
+        
+    Catch ex
+        iFailed = iFailed + 1
+        TracePrint("识别异常: " & ex.Message)
+    End Try
+    
+    Delay(500)  // 避免请求过快
+Next
+
+// 保存汇总表
+Dim sResultFile = "C:\Captcha\batch_result_" & Time.Format(Time.Now(), "yyyyMMdd_HHmmss") & ".xlsx"
+Excel.SaveAs(objExcel, sResultFile)
+Excel.Close(objExcel)
+
+// 输出统计信息
+TracePrint("=== 批量识别完成 ===")
+TracePrint("总文件数: " & Array.Length(arrFiles))
+TracePrint("成功: " & iSuccess & ", 失败: " & iFailed)
+TracePrint("结果已保存到: " & sResultFile)
+```
+
+**使用说明**：
+1. **配置要求**：需要配置 Mage AI 的 Pubkey 和 Secret（在来也科技平台申请）
+2. **支持的验证码类型**：
+   - 纯数字验证码（如：1234）
+   - 纯英文验证码（如：ABCD）
+   - 英文数字组合（如：A1B2）
+   - 四则运算验证码（如：3+5=?）
+   - 滑块验证码
+3. **性能优化**：
+   - 建议添加适当的延迟（500-1000ms）避免请求过快
+   - 对于大批量识别，建议分批处理
+4. **错误处理**：建议使用 Try-Catch 包裹识别代码，处理网络异常、识别失败等情况
+5. **参考文档**：完整的API说明请参考 [来也IDP官方文档](https://documents.laiye.com/idp-mage/docs/OCR/ocr_captcha)
+
+**应用场景**：
+- 银行网银登录自动化
+- 发票查验平台自动验证
+- 政务系统自动登录
+- 电商平台自动下单
+- 各类需要验证码验证的业务系统自动化
+
+### 示例13：印章识别（Mage AI）
+
+**业务场景**：
+印章识别能够识别合同、票据、卡证、表格文档上是否加盖过印章，并返回印章文字内容、所在位置、颜色。常用于合同审批、财务报销、资质审核等场景。主要支持公司用椭圆章、圆章、长方形章。
+
+**核心特点**：
+- ✅ **一图多章**：能够识别一张图片上的多个印章，在印章项目遮挡的情况下也能正确检测印章
+- ✅ **印章颜色识别**：在审批流程中，需要核实印章是复印出来的还是新加盖的，通常需要看印章是黑白还是彩色的。印章识别能够准确返回印章颜色
+- ✅ **支持多种印章类型**：椭圆章、圆章、长方形章等
+
+**识别版本**：
+- 标准版：基础印章识别功能
+- 高级版：更高的识别准确率和更多的功能支持
+
+#### 印章识别标准版
+
+```vb
+// 印章识别标准版示例
+Dim stampResultJSON = ""
+Dim config = {
+    "Url": "https://mage.uibot.com.cn",
+    "Pubkey": "your_pubkey_standard",
+    "Secret": "your_secret_standard"
+}
+Dim imagePath = "C:\Stamps\contract_with_stamp.jpg"
+
+TracePrint("=== 开始印章识别（标准版） ===")
+TracePrint("图片路径: " & imagePath)
+
+Try
+    // 使用标准版印章识别
+    stampResultJSON = laiyeUiBotMageV0.StampIdentify(config["Url"], config["Pubkey"], config["Secret"], imagePath)
+    
+    TracePrint("识别结果（JSON）:")
+    TracePrint(stampResultJSON)
+    
+    // 解析 JSON 结果
+    Dim objResult = JSON.Parse(stampResultJSON)
+    
+    If objResult["code"] = 0 Then
+        Dim arrStamps = objResult["data"]["stamps"]
+        TracePrint("识别到 " & Array.Length(arrStamps) & " 个印章")
+        
+        Dim iIndex = 1
+        For Each objStamp In arrStamps
+            TracePrint("--- 印章 " & iIndex & " ---")
+            TracePrint("印章文字: " & objStamp["text"])
+            TracePrint("印章颜色: " & objStamp["color"])
+            TracePrint("位置信息: X=" & objStamp["x"] & ", Y=" & objStamp["y"] & ", W=" & objStamp["width"] & ", H=" & objStamp["height"])
+            iIndex = iIndex + 1
+        Next
+        
+        // 保存识别结果到 Excel
+        Dim objExcel = Excel.Create(True, "")
+        Excel.SetCell(objExcel, "A1", "序号")
+        Excel.SetCell(objExcel, "B1", "印章文字")
+        Excel.SetCell(objExcel, "C1", "印章颜色")
+        Excel.SetCell(objExcel, "D1", "位置X")
+        Excel.SetCell(objExcel, "E1", "位置Y")
+        Excel.SetCell(objExcel, "F1", "宽度")
+        Excel.SetCell(objExcel, "G1", "高度")
+        
+        Dim iRow = 2
+        For Each objStamp In arrStamps
+            Excel.SetCell(objExcel, "A" & iRow, iRow - 1)
+            Excel.SetCell(objExcel, "B" & iRow, objStamp["text"])
+            Excel.SetCell(objExcel, "C" & iRow, objStamp["color"])
+            Excel.SetCell(objExcel, "D" & iRow, objStamp["x"])
+            Excel.SetCell(objExcel, "E" & iRow, objStamp["y"])
+            Excel.SetCell(objExcel, "F" & iRow, objStamp["width"])
+            Excel.SetCell(objExcel, "G" & iRow, objStamp["height"])
+            iRow = iRow + 1
+        Next
+        
+        Dim sResultFile = "C:\Stamps\stamp_result_" & Time.Format(Time.Now(), "yyyyMMdd_HHmmss") & ".xlsx"
+        Excel.SaveAs(objExcel, sResultFile)
+        Excel.Close(objExcel)
+        TracePrint("识别结果已保存到: " & sResultFile)
+    Else
+        TracePrint("识别失败: " & objResult["message"])
+    End If
+    
+    TracePrint("=== 印章识别完成 ===")
+    
+Catch ex
+    TracePrint("识别失败: " & ex.Message)
+End Try
+```
+
+#### 印章识别高级版
+
+```vb
+// 印章识别高级版示例 - 更高的准确率
+Dim stampResultJSON = ""
+Dim config = {
+    "Url": "https://mage.uibot.com.cn",
+    "Pubkey": "your_pubkey_advanced",
+    "Secret": "your_secret_advanced"
+}
+Dim imagePath = "C:\Stamps\contract_with_stamp.jpg"
+
+TracePrint("=== 开始印章识别（高级版） ===")
+TracePrint("图片路径: " & imagePath)
+
+Try
+    // 使用高级版印章识别
+    stampResultJSON = laiyeUiBotMageV0.StampIdentify(config["Url"], config["Pubkey"], config["Secret"], imagePath)
+    
+    TracePrint("识别结果（JSON）:")
+    TracePrint(stampResultJSON)
+    
+    // 解析 JSON 结果
+    Dim objResult = JSON.Parse(stampResultJSON)
+    
+    If objResult["code"] = 0 Then
+        Dim arrStamps = objResult["data"]["stamps"]
+        TracePrint("识别到 " & Array.Length(arrStamps) & " 个印章")
+        
+        // 详细输出每个印章信息
+        For Each objStamp In arrStamps
+            TracePrint("--- 印章详细信息 ---")
+            TracePrint("印章文字: " & objStamp["text"])
+            TracePrint("印章类型: " & objStamp["type"])  // 圆章、椭圆章、方章
+            TracePrint("印章颜色: " & objStamp["color"])  // 红色、蓝色、黑白等
+            TracePrint("置信度: " & objStamp["confidence"])
+            TracePrint("位置: (" & objStamp["x"] & ", " & objStamp["y"] & ")")
+            TracePrint("尺寸: " & objStamp["width"] & " x " & objStamp["height"])
+        Next
+    Else
+        TracePrint("识别失败: " & objResult["message"])
+    End If
+    
+    TracePrint("=== 印章识别完成 ===")
+    
+Catch ex
+    TracePrint("识别失败: " & ex.Message)
+End Try
+```
+
+#### 批量印章识别与审核
+
+```vb
+// 批量印章识别与审核示例 - 用于合同审批流程
+Dim sFolderPath = "C:\Stamps\Contracts"
+Dim arrFiles = File.GetFileList(sFolderPath, "*.jpg|*.png|*.pdf", False)
+Dim config = {
+    "Url": "https://mage.uibot.com.cn",
+    "Pubkey": "your_pubkey",
+    "Secret": "your_secret"
+}
+
+TracePrint("=== 开始批量印章识别 ===")
+TracePrint("待识别文件数: " & Array.Length(arrFiles))
+
+// 创建 Excel 汇总表
+Dim objExcel = Excel.Create(True, "")
+Excel.SetCell(objExcel, "A1", "序号")
+Excel.SetCell(objExcel, "B1", "文件名")
+Excel.SetCell(objExcel, "C1", "印章数量")
+Excel.SetCell(objExcel, "D1", "印章文字")
+Excel.SetCell(objExcel, "E1", "印章颜色")
+Excel.SetCell(objExcel, "F1", "审核状态")
+
+Dim iRow = 2
+Dim iSuccess = 0
+Dim iFailed = 0
+
+For Each sFile In arrFiles
+    TracePrint("处理文件: " & File.GetName(sFile))
+    
+    Try
+        // 识别印章
+        Dim stampResultJSON = laiyeUiBotMageV0.StampIdentify(config["Url"], config["Pubkey"], config["Secret"], sFile)
+        Dim objResult = JSON.Parse(stampResultJSON)
+        
+        If objResult["code"] = 0 Then
+            Dim arrStamps = objResult["data"]["stamps"]
+            Dim iStampCount = Array.Length(arrStamps)
+            
+            // 收集印章信息
+            Dim sStampTexts = ""
+            Dim sStampColors = ""
+            Dim bHasColorStamp = False
+            
+            For Each objStamp In arrStamps
+                sStampTexts = sStampTexts & objStamp["text"] & "; "
+                sStampColors = sStampColors & objStamp["color"] & "; "
+                
+                // 检查是否有彩色印章（非黑白）
+                If objStamp["color"] <> "黑白" And objStamp["color"] <> "灰色" Then
+                    bHasColorStamp = True
+                End If
+            Next
+            
+            // 审核状态判断
+            Dim sAuditStatus = ""
+            If iStampCount = 0 Then
+                sAuditStatus = "未盖章"
+            ElseIf Not bHasColorStamp Then
+                sAuditStatus = "疑似复印件"
+            Else
+                sAuditStatus = "审核通过"
+            End If
+            
+            // 写入 Excel
+            Excel.SetCell(objExcel, "A" & iRow, iRow - 1)
+            Excel.SetCell(objExcel, "B" & iRow, File.GetName(sFile))
+            Excel.SetCell(objExcel, "C" & iRow, iStampCount)
+            Excel.SetCell(objExcel, "D" & iRow, sStampTexts)
+            Excel.SetCell(objExcel, "E" & iRow, sStampColors)
+            Excel.SetCell(objExcel, "F" & iRow, sAuditStatus)
+            
+            iSuccess = iSuccess + 1
+            TracePrint("识别成功: " & iStampCount & " 个印章, 状态: " & sAuditStatus)
+        Else
+            Excel.SetCell(objExcel, "A" & iRow, iRow - 1)
+            Excel.SetCell(objExcel, "B" & iRow, File.GetName(sFile))
+            Excel.SetCell(objExcel, "F" & iRow, "识别失败")
+            
+            iFailed = iFailed + 1
+            TracePrint("识别失败")
+        End If
+        
+        iRow = iRow + 1
+        
+    Catch ex
+        iFailed = iFailed + 1
+        TracePrint("识别异常: " & ex.Message)
+    End Try
+    
+    Delay(500)  // 避免请求过快
+Next
+
+// 保存汇总表
+Dim sResultFile = "C:\Stamps\batch_result_" & Time.Format(Time.Now(), "yyyyMMdd_HHmmss") & ".xlsx"
+Excel.SaveAs(objExcel, sResultFile)
+Excel.Close(objExcel)
+
+// 输出统计信息
+TracePrint("=== 批量识别完成 ===")
+TracePrint("总文件数: " & Array.Length(arrFiles))
+TracePrint("成功: " & iSuccess & ", 失败: " & iFailed)
+TracePrint("结果已保存到: " & sResultFile)
+```
+
+**使用说明**：
+1. **配置要求**：
+   - 标准版和高级版需要不同的 Pubkey 和 Secret
+   - 在来也科技平台申请对应版本的密钥
+2. **识别结果字段**：
+   - text：印章文字内容
+   - color：印章颜色（红色、蓝色、黑白等）
+   - type：印章类型（圆章、椭圆章、方章）
+   - x, y：印章位置坐标
+   - width, height：印章尺寸
+   - confidence：识别置信度（高级版）
+3. **应用场景**：
+   - 合同审批：检查合同是否加盖公章
+   - 财务报销：验证报销单据上的印章
+   - 资质审核：核实证照上的印章真实性
+   - 文档归档：自动识别并分类带印章的文档
+4. **审核规则**：
+   - 未盖章：印章数量为0
+   - 疑似复印件：只有黑白印章
+   - 审核通过：有彩色印章
+5. **性能优化**：
+   - 建议添加适当的延迟（500-1000ms）避免请求过快
+   - 对于大批量识别，建议分批处理
+6. **参考文档**：完整的API说明请参考 [来也IDP官方文档](https://documents.laiye.com/idp-mage/docs/OCR/ocr_stamp)
+
+**成功案例**：
+在合同审批场景中，企业每天需要处理大量合同文档，人工检查印章不仅效率低下，还容易出错。通过RPA+印章识别AI，可以自动检测合同上是否加盖了公章，印章颜色是否为彩色（排除复印件），大大提升了审批效率和准确性。
+
 ---
 
 ## 邮件自动化
@@ -1159,6 +2088,339 @@ Next
 
 ---
 
-**文档版本**: v1.0.0  
+## 智能文档处理平台 API 集成
+
+### API 接口配置
+
+**基础信息**：
+- **域名**：`https://cloud.laiye.com/idp`
+- **请求协议**：HTTPS
+- **数据格式**：JSON
+
+### 应用签名验证
+
+使用应用签名验证方式调用 API，需要在 HTTP Header 中添加以下字段：
+
+| Header Key | 描述 |
+|------------|------|
+| Api-Auth-pubkey | 用户创建应用的 pubkey |
+| Api-Auth-timestamp | 当前时间戳（秒） |
+| Api-Auth-nonce | 随机字符串 |
+| Api-Auth-sign | 签名(signature)，生成规则：(Api-Auth-nonce+Api-Auth-timestamp+secret_key)的sha1值 |
+
+### 示例14：生成 API 请求头（VBScript）
+
+```vb
+// 生成来也 IDP API 请求头
+Function GenerateIDPHeader(sPubkey, sSecretKey)
+    Dim objHeader, sTimestamp, sNonce, sSign, sSignSource
+    
+    // 创建 Header 字典
+    Set objHeader = CreateObject("Scripting.Dictionary")
+    
+    // 生成时间戳（秒）
+    sTimestamp = CStr(DateDiff("s", "1970-01-01 00:00:00", Now()))
+    
+    // 生成随机字符串（10位）
+    sNonce = GenerateRandomString(10)
+    
+    // 生成签名
+    sSignSource = sNonce & sTimestamp & sSecretKey
+    sSign = SHA1Hash(sSignSource)
+    
+    // 添加到 Header
+    objHeader.Add "Api-Auth-pubkey", sPubkey
+    objHeader.Add "Api-Auth-timestamp", sTimestamp
+    objHeader.Add "Api-Auth-nonce", sNonce
+    objHeader.Add "Api-Auth-sign", sSign
+    objHeader.Add "Content-Type", "application/json"
+    
+    Set GenerateIDPHeader = objHeader
+End Function
+
+// 生成随机字符串
+Function GenerateRandomString(iLength)
+    Dim sChars, sResult, i
+    sChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+    sResult = ""
+    
+    Randomize
+    For i = 1 To iLength
+        sResult = sResult & Mid(sChars, Int(Rnd() * Len(sChars)) + 1, 1)
+    Next
+    
+    GenerateRandomString = sResult
+End Function
+
+// SHA1 哈希函数
+Function SHA1Hash(sInput)
+    Dim objSHA1, arrBytes, i, sHash
+    
+    // 使用 .NET 的 SHA1 类
+    Set objSHA1 = CreateObject("System.Security.Cryptography.SHA1CryptoServiceProvider")
+    arrBytes = objSHA1.ComputeHash_2(StringToByteArray(sInput))
+    
+    sHash = ""
+    For i = 0 To UBound(arrBytes)
+        sHash = sHash & Right("0" & Hex(arrBytes(i)), 2)
+    Next
+    
+    SHA1Hash = LCase(sHash)
+End Function
+
+// 字符串转字节数组
+Function StringToByteArray(sInput)
+    Dim objStream
+    Set objStream = CreateObject("ADODB.Stream")
+    objStream.Type = 2  // adTypeText
+    objStream.Charset = "utf-8"
+    objStream.Open
+    objStream.WriteText sInput
+    objStream.Position = 0
+    objStream.Type = 1  // adTypeBinary
+    objStream.Position = 3  // 跳过 BOM
+    StringToByteArray = objStream.Read
+    objStream.Close
+End Function
+```
+
+### 示例15：调用通用文字识别 API
+
+```vb
+// 调用来也 IDP 通用文字识别 API
+Dim sPubkey = "your_pubkey_here"
+Dim sSecretKey = "your_secret_key_here"
+Dim sImagePath = "C:\test_image.jpg"
+Dim sApiUrl = "https://cloud.laiye.com/idp/v1/mage/ocr/general"
+
+TracePrint("=== 开始调用通用文字识别 API ===")
+
+Try
+    // 读取图片并转换为 Base64
+    Dim objFSO, objFile, arrBytes, sBase64
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    Set objFile = objFSO.OpenTextFile(sImagePath, 1)
+    
+    // 读取文件为二进制
+    Dim objStream
+    Set objStream = CreateObject("ADODB.Stream")
+    objStream.Type = 1  // adTypeBinary
+    objStream.Open
+    objStream.LoadFromFile sImagePath
+    arrBytes = objStream.Read
+    sBase64 = Base64Encode(arrBytes)
+    objStream.Close
+    
+    // 生成请求头
+    Dim objHeader
+    Set objHeader = GenerateIDPHeader(sPubkey, sSecretKey)
+    
+    // 构建请求体
+    Dim sRequestBody
+    sRequestBody = "{""image"":""" & sBase64 & """}"
+    
+    // 发送 HTTP POST 请求
+    Dim objHTTP, sResponse
+    Set objHTTP = CreateObject("MSXML2.ServerXMLHTTP.6.0")
+    objHTTP.Open "POST", sApiUrl, False
+    
+    // 设置请求头
+    Dim sKey
+    For Each sKey In objHeader.Keys
+        objHTTP.setRequestHeader sKey, objHeader(sKey)
+    Next
+    
+    // 发送请求
+    objHTTP.Send sRequestBody
+    
+    // 获取响应
+    sResponse = objHTTP.responseText
+    TracePrint("API 响应: " & sResponse)
+    
+    // 解析 JSON 响应
+    Dim objJSON, sText
+    Set objJSON = ParseJSON(sResponse)
+    
+    If objJSON("code") = 0 Then
+        sText = objJSON("data")("text")
+        TracePrint("识别结果: " & sText)
+        
+        // 保存结果到文件
+        Dim objOutFile
+        Set objOutFile = objFSO.CreateTextFile("C:\ocr_result.txt", True)
+        objOutFile.Write sText
+        objOutFile.Close
+        
+        TracePrint("识别成功，结果已保存")
+    Else
+        TracePrint("识别失败: " & objJSON("message"))
+    End If
+    
+    TracePrint("=== API 调用完成 ===")
+    
+Catch ex
+    TracePrint("调用失败: " & ex.Message)
+End Try
+```
+
+### 示例16：批量调用票据识别 API
+
+```vb
+// 批量调用来也 IDP 通用多票据识别 API
+Dim sPubkey = "your_pubkey_here"
+Dim sSecretKey = "your_secret_key_here"
+Dim sFolderPath = "C:\Invoices"
+Dim sApiUrl = "https://cloud.laiye.com/idp/v1/mage/ocr/bills"
+
+TracePrint("=== 开始批量票据识别 ===")
+
+// 获取文件列表
+Dim arrFiles
+arrFiles = File.GetFileList(sFolderPath, "*.jpg|*.png", False)
+TracePrint("待识别文件数: " & Array.Length(arrFiles))
+
+// 创建 Excel 汇总表
+Dim objExcel
+objExcel = Excel.Create(True, "")
+Excel.SetCell(objExcel, "A1", "序号")
+Excel.SetCell(objExcel, "B1", "文件名")
+Excel.SetCell(objExcel, "C1", "票据类型")
+Excel.SetCell(objExcel, "D1", "发票号码")
+Excel.SetCell(objExcel, "E1", "金额")
+Excel.SetCell(objExcel, "F1", "识别状态")
+
+Dim iRow = 2
+Dim iSuccess = 0
+Dim iFailed = 0
+
+For Each sFile In arrFiles
+    TracePrint("处理文件: " & File.GetName(sFile))
+    
+    Try
+        // 读取图片并转换为 Base64
+        Dim objStream, sBase64
+        Set objStream = CreateObject("ADODB.Stream")
+        objStream.Type = 1
+        objStream.Open
+        objStream.LoadFromFile sFile
+        sBase64 = Base64Encode(objStream.Read)
+        objStream.Close
+        
+        // 生成请求头
+        Dim objHeader
+        Set objHeader = GenerateIDPHeader(sPubkey, sSecretKey)
+        
+        // 构建请求体
+        Dim sRequestBody
+        sRequestBody = "{""image"":""" & sBase64 & """}"
+        
+        // 发送请求
+        Dim objHTTP, sResponse
+        Set objHTTP = CreateObject("MSXML2.ServerXMLHTTP.6.0")
+        objHTTP.Open "POST", sApiUrl, False
+        
+        Dim sKey
+        For Each sKey In objHeader.Keys
+            objHTTP.setRequestHeader sKey, objHeader(sKey)
+        Next
+        
+        objHTTP.Send sRequestBody
+        sResponse = objHTTP.responseText
+        
+        // 解析响应
+        Dim objJSON
+        Set objJSON = ParseJSON(sResponse)
+        
+        If objJSON("code") = 0 Then
+            Dim arrBills, objBill
+            arrBills = objJSON("data")("bills")
+            
+            If Array.Length(arrBills) > 0 Then
+                objBill = arrBills(0)
+                
+                // 写入 Excel
+                Excel.SetCell(objExcel, "A" & iRow, iRow - 1)
+                Excel.SetCell(objExcel, "B" & iRow, File.GetName(sFile))
+                Excel.SetCell(objExcel, "C" & iRow, objBill("type"))
+                Excel.SetCell(objExcel, "D" & iRow, objBill("invoice_number"))
+                Excel.SetCell(objExcel, "E" & iRow, objBill("amount"))
+                Excel.SetCell(objExcel, "F" & iRow, "成功")
+                
+                iSuccess = iSuccess + 1
+                TracePrint("识别成功: " & objBill("type"))
+            End If
+        Else
+            Excel.SetCell(objExcel, "A" & iRow, iRow - 1)
+            Excel.SetCell(objExcel, "B" & iRow, File.GetName(sFile))
+            Excel.SetCell(objExcel, "F" & iRow, "失败: " & objJSON("message"))
+            
+            iFailed = iFailed + 1
+            TracePrint("识别失败")
+        End If
+        
+        iRow = iRow + 1
+        Delay(500)  // 避免请求过快
+        
+    Catch ex
+        iFailed = iFailed + 1
+        TracePrint("处理异常: " & ex.Message)
+    End Try
+Next
+
+// 保存汇总表
+Dim sResultFile
+sResultFile = "C:\Invoices\batch_result_" & Time.Format(Time.Now(), "yyyyMMdd_HHmmss") & ".xlsx"
+Excel.SaveAs(objExcel, sResultFile)
+Excel.Close(objExcel)
+
+TracePrint("=== 批量识别完成 ===")
+TracePrint("总文件数: " & Array.Length(arrFiles))
+TracePrint("成功: " & iSuccess & ", 失败: " & iFailed)
+TracePrint("结果已保存到: " & sResultFile)
+```
+
+### API 限流说明
+
+为了安全性和响应效率，来也 IDP 对 API 做了调用频率限流：
+
+| AI能力 | URI | 限制规则 |
+|--------|-----|----------|
+| 通用文字识别 | /v1/mage/ocr/general | 企业版: 根据商务沟通确定<br>免费版: 每分钟6次 |
+| 通用表格识别 | /v1/mage/ocr/table | 企业版: 根据商务沟通确定<br>免费版: 每分钟6次 |
+| 通用卡证识别 | /v1/mage/ocr/license | 企业版: 根据商务沟通确定<br>免费版: 每分钟6次 |
+| 通用多票据识别 | /v1/mage/ocr/bills | 企业版: 根据商务沟通确定<br>免费版: 每分钟6次 |
+| 模板识别 | /v1/document/ocr/template | 企业版: 根据商务沟通确定<br>免费版: 每分钟6次 |
+
+每次调用，在返回的 Response Headers 中会给出以下参数：
+- `X-Ratelimit-Remaining`：当前时间窗口剩余请求
+- `X-Ratelimit-Reset`：下次重置时间
+- `X-Ratelimit-Limit`：当前时间窗口最大限流次数
+
+### 常见错误码
+
+| Code | 描述 |
+|------|------|
+| 0 | 正常 |
+| 3 | 参数错误 |
+| 8 | 资源耗尽（如请求体过大） |
+| 10000 | 服务内部错误 |
+| 10001 | Header解析错误 |
+| 10002 | 签名验证失败 |
+| 10003 | 参数不正确，应用不存在 |
+| 10006 | 需要选择待识别的图片 |
+| 10007 | 错误的文件类型 |
+| 10008 | 格式不正确，只支持png,jpeg,jpg,bmp,tiff,pdf |
+| 10009 | 文件尺寸不正确，文件的长宽需要在15和4096像素之间 |
+| 10010 | 处理超时 |
+| 10011 | 账号配额不足 |
+| 10015 | 调用频率超限 |
+| 10017 | 不支持加密的PDF |
+| 10018 | 请求数据过大，请控制在10M以内 |
+
+**参考文档**：[来也 IDP 接口文档](https://cloud.laiye.com/idp/docs/latest/docUnderstanding/backend/api.html)
+
+---
+
+**文档版本**: v1.1.0  
 **适用版本**: UIBot 6.0.0.211215(64位)  
-**更新时间**: 2024-01-15
+**更新时间**: 2025-05-02

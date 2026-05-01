@@ -3,7 +3,9 @@
     "allow": [
       "Bash(chmod +x uibot-tools.sh)",
       "Read(//c/Users/98043/Desktop/杂/skill-ub素材/通用多票据识别网页素材/**)",
-      "Read(//c/Users/98043/Desktop/杂/skill-ub素材/通用多票据代码模板/通用多票据识别/**)"
+      "Read(//c/Users/98043/Desktop/杂/skill-ub素材/通用多票据代码模板/通用多票据识别/**)",
+      "Read(//c/Users/98043/Desktop/杂/skill-ub素材/通用卡证识别网页素材/**)",
+      "Read(//c/Users/98043/Desktop/杂/skill-ub素材/通用卡证识别代码模板/通用卡证识别/**)"
     ]
   }
 }
