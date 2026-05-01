@@ -1,0 +1,171 @@
+/*
+作者：张建琦
+创建时间：2021年04月07日
+公共模块，放置函数
+*/
+
+
+/*
+功能：初始化全局变量（有Commander的情况下，项目参数放在Commander上）
+入参：无
+出参：无
+*/
+Function InitArgByCommander()
+	TracePrint "——————进入InitArgByCommander函数——————"
+	
+	Dim logLevel = '' // 日志等级
+	Dim maxRetryNum = '' // 最大重试次数
+	
+	
+	// 设置日志等级
+	logLevel = Asset.GetAsset('LogLevel')
+	logLevel = CInt(logLevel)
+	Log.SetLevel(logLevel)
+	
+	// 重试计数器
+	g_iRetryNum = g_iRetryNum + 1
+	Log.Info('第'&g_iRetryNum&'次开始流程')
+	// 初始化全局参数
+	g_dictGlobal = {}
+	//流程异常记录
+	g_dictGlobal["isEx"] = False
+	// 最大重试次数
+	maxRetryNum = Asset.GetAsset("maxRetryNum")
+	maxRetryNum = CInt(maxRetryNum)
+	g_dictGlobal["maxRetryNum"] = maxRetryNum
+	// 携程地址
+	g_dictGlobal["xcAddr"] = Asset.GetAsset("携程官网地址")
+	// 南航地址
+	g_dictGlobal["csAddr"] = Asset.GetAsset("南方航空网址")
+	// 东航地址
+	g_dictGlobal["ceAddr"] = Asset.GetAsset("东方航空网址")
+	// 出发地
+	g_dictGlobal["departure"] = Asset.GetAsset("出发地")
+	// 到达地
+	g_dictGlobal["arrival"] = Asset.GetAsset("到达地")
+	// 从本地配置文件获取设置其他全局参数
+	InitArgByLocal()
+	TracePrint "——————退出InitArgByCommander函数——————"
+End Function
+
+
+/*
+功能：初始化全局变量（Commander未配置的参数，项目参数放在本地配置文件Config.ini或Config.xlsx中）
+入参：无
+出参：无
+*/
+Function InitArgByLocal()
+	Dim dTime = "" // 日期
+	TracePrint "——————进入InitArgByLocal函数——————"
+	// 用户名
+	g_dictGlobal["userName"] = INI.Read(@res"config\\Config.ini", "用户", "用户名", "UiBot")
+	// Excel文件名称
+	dTime = Time.Now()+1
+	dTime = Time.Format(dTime,"yyyymmdd")
+	g_dictGlobal["excelName"] = ""&dTime&"_"&g_dictGlobal["departure"]&"_"&g_dictGlobal["arrival"]&"_"&g_dictGlobal["userName"]&".xlsx"
+	// 天气接口
+	g_dictGlobal["weatherApi"] = INI.Read(@res"config\\Config.ini", "接口", "天气接口", "https://tianqiapi.com/api?version=v2&cityid=101010100&appid=53422641&appsecret=5e2yDGsM")
+	// 邮件服务器IP
+	g_dictGlobal["server"] = INI.Read(@res"config\\Config.ini", "邮件", "发送邮件服务器IP", "smtp.qq.com")
+	// 邮件服务器端口
+	g_dictGlobal["port"] = INI.Read(@res"config\\Config.ini", "邮件", "发送邮件端口", 25)
+	// 邮件发送地址
+	g_dictGlobal["passport"] = INI.Read(@res"config\\Config.ini", "邮件", "发送邮件地址", "3012095869@qq.com")
+	// 邮件发送密码
+	g_dictGlobal["password"] = INI.Read(@res"config\\Config.ini", "邮件", "发送邮件密码", "yxpjejtmgyuidhce")
+	// 邮件接收地址
+	g_dictGlobal["sendAddr"] = INI.Read(@res"config\\Config.ini", "邮件", "接收邮件地址", "laiye_exam@126.com")
+	TracePrint "——————退出InitArgByLocal函数——————"
+End Function
+
+
+/*
+功能：将异常捕获到的数据封装处理
+入参：
+errLog：错误日志
+errDate：捕获到的错误数据
+出参：
+无
+*/
+Function ErrCapture(errLog,errDate)
+	TracePrint "——————进入ErrCapture函数——————"
+	g_dictGlobal["ErrMsg"] = errDate
+	g_dictGlobal["isEx"] = True
+	Log.Error(errLog&'：'&CStr(errDate))
+	TracePrint "——————退出ErrCapture函数——————"
+End Function
+
+
+/*
+功能：获取目标日期
+入参：
+moreOne：日期往后推几天
+出参：
+dTime：目标日期
+*/
+Function GetDate(moreOne)
+	TracePrint "——————进入GetDate函数——————"
+	Dim dTime = ""
+	dTime = Time.Now()+1+moreOne
+	dTime = Time.Format(dTime,"yyyy-mm-dd")
+	TracePrint "——————退出GetDate函数——————"
+	Return dTime
+End Function
+
+
+/*
+功能：获取天气
+入参：
+date：要获取第几天的天气
+出参：
+weather：天气情况
+*/
+Function GetWeather(date)
+	TracePrint "——————进入GetWeather函数——————"
+	Dim weather = '' // 天气情况
+	Dim getWeather = '' // 接口获取天气结果
+	Dim weatherData = '' // 接口data字段
+	Dim dayWeatherData = '' // 当天天气数据
+	// 接口获取天气
+	getWeather = HTTP.Get(g_dictGlobal["weatherApi"], {}, 60000)
+	// 获取接口data字段
+	weatherData = JSON.Parse(getWeather)['data']
+	// 到达当天天气数据
+	dayWeatherData = weatherData[date]
+	// 天气结果
+	weather = dayWeatherData['wea']&' '&dayWeatherData['tem2']&'~'&dayWeatherData['tem1']&'摄氏度'
+	TracePrint "——————退出GetWeather函数——————"
+	Return weather
+End Function
+
+
+/*
+功能:发送smtp邮件
+入参:
+server: 邮件服务器IP
+port: 邮件服务器端口
+passport: 邮箱
+password: 邮箱密码
+sendAddr: 接收邮箱
+title: 标题
+content: 正文
+attachment: 附件
+出参：
+result：邮件发送结果
+*/
+Function SendMailSMTP(server,port,passport,password,sendAddr,title,content,attachment)
+	TracePrint "——————进入SendMailSMTP函数——————"
+	Dim sRet = ""
+	Dim result = True // 邮件发送结果
+	Try
+		result = Mail.SendEx(server,port,False,passport,password,passport,sendAddr,"",title,content,attachment)
+	Catch Ex
+		result = False
+		ErrCapture("邮件发送异常:",Ex)
+	End Try
+	TracePrint "——————退出SendMailSMTP函数——————"
+	Return result
+End Function
+
+
+

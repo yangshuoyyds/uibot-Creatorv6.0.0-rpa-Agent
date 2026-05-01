@@ -1,0 +1,154 @@
+/*
+作者：张建琦
+创建时间：2020年04月07日
+本流程块用于实现对东航官网以及数据的相关操作，对应设计步骤如下：
+1.判断本流程块是否执行
+2.进入东航官网
+3.查询航班数据
+4.抓取航班数据
+5.处理数据格式
+*/
+
+
+/*1.判断本流程块是否执行*/
+If g_dictGlobal["isEx"] = True
+	Log.Info("进入东航模块前流程出错")
+	Return
+End If
+
+TracePrint "——————进入东航模块——————"
+// Dim sRet = ""
+// Dim bRet = ""
+Dim hWeb = "" // 浏览器
+Dim arrayData = "" // 数据抓取数组
+Dim dataLen = "" // 数据数组长度
+Dim arrRet = "" // 字符串切割成的数组
+Dim flightNumLen = "" // 航班号长度
+Dim flightNum = '' // 航班号
+Dim dTime = '' // 出发当天日期
+// Dim isMoreOneDay = False // 到达日期是否是出发日期的隔天
+// Dim arrivalDate = '' // 到达日期
+Dim weatherData = '' // 到达日天气
+Dim price = "" // 经济舱价格
+Dim eachDataArr = [] // 每一条航班数据
+Dim dataArr = [] // 机票数据结果
+
+/*2.进入东航官网*/
+Try 3
+	App.Kill('chrome.exe')
+	hWeb = WebBrowser.Create("chrome",g_dictGlobal["ceAddr"],30000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"sBrowserPath":"","sStartArgs":""})
+	// 窗口最大化
+	#icon("@res:quj7faqs-i6um-8p4i-urkb-e28d9lbdd607.png")
+	Window.Show({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*中国东方航空公司*","app":"chrome"}]},"max")
+	// 点击机票中的单程，以此判断网页是否加载成功
+	#icon("@res:sb2bshrm-r9hv-g100-u2e7-1qn10hlr04u0.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"LABEL","parentid":"ga_cn_jpdc"}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+	
+Catch Ex
+	PublicBlock.ErrCapture("打开东航官网失败:",Ex)
+	Return
+Else
+	Log.Info('成功打开东航官网')
+End Try
+
+/*3.查询航班数据*/
+Try 3
+	// 点击logo
+	#icon("@res:abvd02c1-a5b8-o9ol-g2tp-lq829qgbqs3i.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"IMG","aaname":"中国东方航空公司"}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+	// 选择时间
+	dTime = PublicBlock.GetDate(0)
+	#icon("@res:ujvkh5er-uj4d-j1aa-529t-f8d33gjhjpan.png")
+	Keyboard.InputText({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"INPUT","id":"depDt"}]},dTime,True,20,10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":500,"bSetForeground":True,"sSimulate":"message","bValidate":False,"bClickBeforeInput":False})
+	// 输入出发地
+	#icon("@res:g8o3nqu7-3v1c-379v-r9tb-beb2033a8170.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"INPUT","id":"LABEL_ID_0"}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+	
+	#icon("@res:5f9gaai8-ne0d-j06d-i2f1-oicq1ms11lja.png")
+	Keyboard.InputText({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"INPUT","id":"LABEL_ID_0"}]},g_dictGlobal["departure"],True,20,10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":1000,"bSetForeground":True,"sSimulate":"message","bValidate":False,"bClickBeforeInput":False})
+	#icon("@res:lhgknbje-59ta-ug5a-46nh-o84v5qcvpiij.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"SPAN","parentid":"ga_cn_dgjp"}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+	
+	// 输入到达地
+	#icon("@res:38mjkisn-j757-98vv-78ba-uqksd3bdfu2j.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"INPUT","id":"LABEL_ID_1"}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+	#icon("@res:bo7f835d-8vk6-ehu0-ihn2-7ibbcht9f80q.png")
+	Keyboard.InputText({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"INPUT","id":"LABEL_ID_1"}]},g_dictGlobal["arrival"],True,20,10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":500,"bSetForeground":True,"sSimulate":"message","bValidate":False,"bClickBeforeInput":False})
+	
+	#icon("@res:lhgknbje-59ta-ug5a-46nh-o84v5qcvpiij.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"SPAN","parentid":"ga_cn_dgjp"}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+	// 鼠标点击查询按键，查询相关机票信息
+	#icon("@res:0d60g5vk-dhqv-r7j5-h0lq-m257m3jusajb.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"BUTTON","id":"btn_flight_search"}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+	// 点击数据页面的默认排序，以此判断相关机票信息页是否加载成功
+	#icon("@res:t99m8ahp-rfl5-npp1-9o9g-u0r2b64hvfjo.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"LI","parentid":"sylvanas_2","isleaf":"1"}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":3000,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+Catch Ex
+	PublicBlock.ErrCapture("查询相关机票信息失败:",Ex)
+	Return
+Else
+	Log.Info('查询相关机票信息成功')
+End Try
+
+/*4.抓取航班数据*/
+Try
+	Mouse.Wheel(20,"down", [],{"iDelayAfter":300,"iDelayBefore":200})
+	arrayData = UiElement.DataScrap({"html":[{"id":"sylvanas_3","tag":"DIV"}],"wnd":[{"app":"chrome","cls":"Chrome_WidgetWin_1","title":"*"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}]},{"Columns":[{"props":["text"],"selecors":[{"index":0,"prefix":"","tag":"article","value":"article"},{"className":"summary","index":0,"prefix":">","tag":"section","value":"section.summary"}]},{"props":["text"],"selecors":[{"index":0,"prefix":"","tag":"article","value":"article"},{"className":"detail","index":0,"prefix":">","tag":"section","value":"section.detail"},{"className":"head cols-3","index":0,"prefix":">","tag":"dl","value":"dl.head.cols-3"},{"index":0,"prefix":">","tag":"dd","value":"dd"}]}],"ExtractTable":0},{"objNextLinkElement":"","iMaxNumberOfPage":5,"iMaxNumberOfResult":-1,"iDelayBetweenMS":1000,"bContinueOnError":False})
+Catch Ex
+	PublicBlock.ErrCapture("抓取航班数据失败:",Ex)
+	Return
+Else
+	dataLen = Len(arrayData)
+	// 判断抓取到数据的长度，以此判断数据抓取结果正确与否
+	If dataLen>0
+		Log.Info('抓取航班数据成功')
+	Else
+		Log.Info('航班数据长度为0，数据抓取失败')
+		g_dictGlobal["isEx"] = True
+		Return
+	End If
+End Try
+
+/*5.处理数据格式*/
+Try
+	For Each value In arrayData
+		eachDataArr = [] // 初始化每一条航班数据
+		arrRet = Split(value[0],"\n")
+		// 机票来源
+		eachDataArr = push(eachDataArr,"东航")
+		// 航空公司
+		eachDataArr = push(eachDataArr,"东方航空")
+		// 航班号
+		flightNum = Split(arrRet[0],"|")[1]
+		flightNumLen = Len(flightNum)
+		flightNum = Right(flightNum,flightNumLen-1)
+		eachDataArr = push(eachDataArr,flightNum)
+		// 出发时间
+		dTime = PublicBlock.GetDate(0)
+		eachDataArr = push(eachDataArr,dTime&' '&arrRet[1])
+		// 到达时间
+		eachDataArr = push(eachDataArr,dTime&' '&arrRet[4])
+		// 经济舱价格
+		price = DigitFromStr(value[1])
+		eachDataArr = push(eachDataArr,price)
+		// 出发机场
+		eachDataArr = push(eachDataArr,arrRet[2])
+		// 到达机场
+		eachDataArr = push(eachDataArr,arrRet[5])
+		// 到达地天气
+		weatherData = PublicBlock.GetWeather(1)
+		eachDataArr = push(eachDataArr,weatherData)
+		dataArr = push(dataArr,eachDataArr)
+	Next
+	g_dictGlobal["ceData"] = dataArr
+Catch Ex
+	PublicBlock.ErrCapture("处理东航数据格式失败:",Ex)
+	Return
+Else
+	Log.Info('处理东航数据格式成功')
+End Try
+
+TracePrint "——————退出东航模块——————"
+
+
+

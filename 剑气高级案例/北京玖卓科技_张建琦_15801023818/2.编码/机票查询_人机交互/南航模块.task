@@ -1,0 +1,138 @@
+/*
+作者：张建琦
+创建时间：2020年04月07日
+本流程块用于实现对南航官网以及数据的相关操作，对应设计步骤如下：
+1.进入南航官网
+2.查询航班数据
+3.抓取航班数据
+4.处理数据格式
+*/
+
+TracePrint "——————进入南航模块——————"
+Dim hWeb = "" // 浏览器
+Dim arrayData = "" // 数据抓取数组
+Dim dataLen = "" // 数据数组长度
+Dim arrRet = "" // 字符串切割成的数组
+Dim dTime = '' // 出发当天日期
+Dim isMoreOneDay = False // 到达日期是否是出发日期的隔天
+Dim arrivalDate = '' // 到达日期
+Dim weatherData = '' // 到达日天气
+Dim price = "" // 经济舱价格
+Dim eachDataArr = [] // 每一条数据
+Dim dataArr = [] // 机票数据结果
+
+/*1.进入南航官网*/
+Try 3
+	App.Kill('chrome.exe')
+	hWeb = WebBrowser.Create("chrome",g_dictGlobal["csAddr"],30000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"sBrowserPath":"","sStartArgs":""})
+	// 窗口最大化
+	#icon("@res:h6r5k3hj-34pr-rbfs-ohnp-78jhksglri3u.png")
+	Window.Show({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"中国南方航空官网*","app":"chrome"}]},"max")
+	// 点击预定行程中的机票，以此判断网页是否加载成功
+	#icon("@res:nvjg7kjk-ij0j-gba9-m5v8-tusq19r9bgjn.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"LI","parentid":"commonbox","css-selector":"body>div>div>div>div>div>ul>li"}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+	
+Catch Ex
+	PublicBlock.ErrCapture("打开南航官网失败:",Ex)
+	Return
+Else
+	Log.Info('成功打开南航官网')
+End Try
+
+/*2.查询航班数据*/
+Try 3
+	// 点击logo
+	#icon("@res:edrv8pk3-bprh-4g37-s5s9-fhg38ombihk4.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"A","aaname":"南方航空公司官网"}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+	// 输入出发地
+	#icon("@res:6716pmcp-umd2-9gev-pe56-huslsot2mmfq.png")
+	Keyboard.InputText({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"INPUT","id":"fDepCity"}]},g_dictGlobal["departure"],True,20,10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":1000,"bSetForeground":True,"sSimulate":"message","bValidate":False,"bClickBeforeInput":False})
+	// 输入到达地
+	#icon("@res:sr0ijmk6-t1i5-pjc0-dr20-gkpv1ie7fhe2.png")
+	Keyboard.InputText({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"INPUT","id":"fArrCity"}]},g_dictGlobal["arrival"],True,20,10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":500,"bSetForeground":True,"sSimulate":"message","bValidate":False,"bClickBeforeInput":False})
+	// 点击选择时间
+	#icon("@res:b22jvv0r-ufih-53ob-e25s-9m7hv49rfkig.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"INPUT","id":"fDepDate"}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+	// 鼠标按Right键，选择第二天
+	Keyboard.Press("Right", "press", [],{"iDelayAfter":300,"iDelayBefore":200,"sSimulate":"simulate"})
+	// 鼠标按Enter键，确认出发日期
+	Keyboard.Press("Enter", "press", [],{"iDelayAfter":300,"iDelayBefore":200,"sSimulate":"simulate"})
+	// 鼠标点击查询按键，查询相关机票信息
+	#icon("@res:evk629ec-7fqt-3dhb-atlv-n5gar32uuqa9.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"A","parentid":"commonbox","aaname":" 立即查询 "}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+	// 点击数据页面的航班信息，以此判断相关机票信息页是否加载成功
+	#icon("@res:e98s1ikq-d0ls-4fv1-55lb-nlhih7lhgae3.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"SPAN","parentid":"zls-common","aaname":"航班信息"}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":2000,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+Catch Ex
+	PublicBlock.ErrCapture("查询相关机票信息失败:",Ex)
+	Return
+Else
+	Log.Info('查询相关机票信息成功')
+End Try
+
+/*3.抓取航班数据*/
+Try
+	Mouse.Wheel(30,"down", [],{"iDelayAfter":300,"iDelayBefore":200})
+	arrayData = UiElement.DataScrap({"html":[{"id":"zls-common","tag":"DIV"}],"wnd":[{"app":"chrome","cls":"Chrome_WidgetWin_1","title":"*"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}]},{"Columns":[{"props":["text"],"selecors":[{"className":"zls-flightInfoShow zls-scroll-space","index":0,"prefix":"","tag":"div","value":"div.zls-flightInfoShow.zls-scroll-space"},{"className":"zls-flight","index":0,"prefix":">","tag":"div","value":"div.zls-flight"},{"className":"zls-flg-ui","index":0,"prefix":">","tag":"ul","value":"ul.zls-flg-ui"},{"index":0,"prefix":">","tag":"li","value":"li"},{"className":"fligthL","index":0,"prefix":">","tag":"div","value":"div.fligthL"}]},{"props":["text"],"selecors":[{"className":"zls-flightInfoShow zls-scroll-space","index":0,"prefix":"","tag":"div","value":"div.zls-flightInfoShow.zls-scroll-space"},{"className":"zls-flight","index":0,"prefix":">","tag":"div","value":"div.zls-flight"},{"className":"zls-flg-ui","index":0,"prefix":">","tag":"ul","value":"ul.zls-flg-ui"},{"index":0,"prefix":">","tag":"li","value":"li"},{"className":"fligthR","index":0,"prefix":">","tag":"div","value":"div.fligthR"},{"className":"","index":0,"prefix":">","tag":"ul","value":"ul"},{"className":"zls-cabin-cell","index":4,"prefix":">","tag":"li","value":"li:nth-child(4)"}]}],"ExtractTable":0},{"objNextLinkElement":"","iMaxNumberOfPage":5,"iMaxNumberOfResult":-1,"iDelayBetweenMS":1000,"bContinueOnError":False})
+Catch Ex
+	PublicBlock.ErrCapture("抓取航班数据失败:",Ex)
+	Return
+Else
+	dataLen = Len(arrayData)
+    // 判断抓取到数据的长度，以此判断数据抓取结果正确与否
+	If dataLen>0
+		Log.Info('抓取航班数据成功')
+	Else
+		Log.Info('航班数据长度为0，数据抓取失败')
+		g_dictGlobal["isEx"] = True
+		Return
+	End If
+End Try
+
+/*4.处理数据格式*/
+Try
+	For Each value In arrayData
+		eachDataArr = [] // 初始化每一条航班数据
+		arrRet = Split(value[0],"\n")
+		// 机票来源
+		eachDataArr = push(eachDataArr,"南航")
+		// 航空公司
+		eachDataArr = push(eachDataArr,"南方航空")
+		// 航班号
+		eachDataArr = push(eachDataArr,arrRet[0])
+		// 出发时间
+		dTime = PublicBlock.GetDate(0)
+		eachDataArr = push(eachDataArr,dTime&' '&arrRet[2])
+		// 到达时间
+		isMoreOneDay = EndsWith(arrRet[5],"+1天")
+		If isMoreOneDay = True
+			dTime = PublicBlock.GetDate(1)
+			// 到达日天气获取
+			weatherData = PublicBlock.GetWeather(2)
+		Else
+			weatherData = PublicBlock.GetWeather(1)
+		End If
+		arrivalDate = dTime&' '&Left(arrRet[5],5)
+		eachDataArr = push(eachDataArr,arrivalDate)
+		// 经济舱价格
+		price = DigitFromStr(value[1])
+		eachDataArr = push(eachDataArr,price)
+		// 出发机场
+		eachDataArr = push(eachDataArr,arrRet[3])
+		// 到达机场
+		eachDataArr = push(eachDataArr,arrRet[6])
+		// 到达地天气
+		eachDataArr = push(eachDataArr,weatherData)
+		dataArr = push(dataArr,eachDataArr)
+	Next
+	g_dictGlobal["csData"] = dataArr
+Catch Ex
+	PublicBlock.ErrCapture("处理南航数据格式失败:",Ex)
+	Return
+Else
+	Log.Info('处理南航数据格式成功')
+End Try
+
+TracePrint "——————退出南航模块——————"
+
+

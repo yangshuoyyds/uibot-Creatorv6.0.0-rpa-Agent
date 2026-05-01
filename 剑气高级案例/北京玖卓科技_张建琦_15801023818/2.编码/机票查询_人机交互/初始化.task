@@ -1,0 +1,28 @@
+/*
+作者：张建琦
+创建时间：2020年04月07日
+本流程块用于实现机票查询流程的环境初始化，对应设计步骤如下：
+1.结束所有相关进程
+2.全局变量以及日志级别的初始化
+3.检查Excel是否满足流程运行环境
+*/
+Dim objExcelWorkBook = "" // Excel文件
+TracePrint "——————进入初始化模块——————"
+
+/*1.结束所有相关进程*/ 
+App.Kill("chrome.exe")
+App.Kill("excel.exe")
+
+/*2.全局变量以及日志级别的初始化*/
+PublicBlock.InitArgByLocal()
+
+/*3.检查Excel是否满足流程运行环境*/ 
+Try
+	objExcelWorkBook = Excel.OpenExcel(@res"config\\飞机票查询练习项目输出模板.xlsx",True,"Excel","","")
+	Excel.CloseExcel(objExcelWorkBook,True)
+Catch Ex
+	PublicBlock.ErrCapture("初始化异常，Excel不满足流程运行条件:",Ex)
+	Return
+End Try
+TracePrint "——————退出初始化模块——————"
+

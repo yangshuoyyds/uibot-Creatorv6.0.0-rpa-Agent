@@ -1,0 +1,80 @@
+/*
+作者：张建琦
+创建时间：2020年04月08日
+本流程块是用于发送流程运行结果邮件的相关操作，对应设计步骤如下：
+1.判断流程运行结果是正确还是错误
+2.按结果处理错误邮件
+3.按结果处理正确邮件
+*/
+
+Dim iRet = ""
+Dim bRet = ""
+Dim processName = "" // 流程名称
+Dim processBlockName = '' // 流程块名称
+Dim codeLineNum = '' // 代码行号
+Dim errInfo = '' // 报错信息
+Dim mainText = '' // 正文
+Dim enclosure = '' // 附件
+Dim title = '' // 邮件标题
+Dim result='' // 邮件发送结果
+
+// 端口转为整数
+g_dictGlobal["port"] = CInt(g_dictGlobal["port"])
+TracePrint "——————进入发送邮件模块——————"
+
+/*1.判断流程运行结果是正确还是错误*/
+If g_dictGlobal["isEx"] = True 
+	/*2.按结果处理错误邮件*/
+	// 邮件标题
+	title = '流程异常_北京玖卓科技有限公司_张建琦_无人值守'
+	// 异常产生的流程项目名称
+	processName = "北京玖卓科技有限公司_张建琦_机票查询_无人值守"
+	// 异常流程块名
+	processBlockName = Replace(g_dictGlobal["ErrMsg"]['File'],'.task','')
+	// 异常代码行号
+	codeLineNum = g_dictGlobal["ErrMsg"]['Line']
+	// 异常报错信息
+	errInfo = g_dictGlobal["ErrMsg"]['Message']
+	// 正文
+	mainText = "流程名称："&processName&"\n异常流程块名："&processBlockName&"\n异常代码行号："&codeLineNum&"\n异常报错信息："&errInfo
+	Try
+		result = PublicBlock.SendMailSMTP(g_dictGlobal["server"],g_dictGlobal["port"],g_dictGlobal["passport"],g_dictGlobal["password"],g_dictGlobal["sendAddr"],title,mainText,enclosure)
+	Catch Ex
+		PublicBlock.ErrCapture("错误邮件发送失败:",Ex)
+		Return
+	Else
+		If result = True
+			Log.Info('错误邮件发送成功')
+		Else
+			Log.Info('错误邮件发送失败')
+		End If
+		
+	End Try
+Else	
+	/*3.按结果处理正确邮件*/
+	// 邮件标题
+	title = '北京玖卓科技有限公司_张建琦_无人值守'
+	// 附件
+	enclosure = @res"config\\"&g_dictGlobal["excelName"]
+	// 正文
+	mainText = 'Dear 来也\n北京玖卓科技有限公司_张建琦_15801023818程序运行结果，请查阅'
+	Try
+		result = PublicBlock.SendMailSMTP(g_dictGlobal["server"],g_dictGlobal["port"],g_dictGlobal["passport"],g_dictGlobal["password"],g_dictGlobal["sendAddr"],title,mainText,enclosure)
+	Catch Ex
+		PublicBlock.ErrCapture("正确邮件发送失败:",Ex)
+		Return
+	Else
+		If result = True
+			Log.Info('正确邮件发送成功')
+		Else
+			Log.Info('正确邮件发送失败')
+		End If
+		
+	End Try
+End If
+
+
+TracePrint "——————退出发送邮件模块——————"
+
+
+

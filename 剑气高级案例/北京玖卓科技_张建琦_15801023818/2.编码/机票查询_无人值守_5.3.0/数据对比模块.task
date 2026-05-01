@@ -1,0 +1,194 @@
+/*
+作者：张建琦
+创建时间：2020年04月08日
+本流程块用于实现对南航数据与携程数据对比以及东航数据与携程数据对比并写入Excel的相关操作，对应设计步骤如下：
+1.判断本流程块是否执行
+2.南航数据与携程数据对比
+3.处理南航有，但携程没有的数据
+4.东航数据与携程数据对比
+5.处理南航有，但携程没有的数据
+6.结果写入Excel并另存为指定格式的数据
+7.数据按价格进行排序
+*/
+/*1.判断本流程块是否执行*/
+If g_dictGlobal["isEx"] = True
+	Log.Info("进入数据对比前流程出错")
+	Return
+End If
+
+TracePrint "——————进入数据对比模块——————"
+App.Kill('chrome.exe')
+Dim csData = g_dictGlobal["csData"] // 南航数据
+Dim ceData = g_dictGlobal["ceData"] // 东航数据
+Dim xcData = g_dictGlobal["xcData"] // 携程数据
+Dim objExcelWorkBook = "" // Excel对象
+Dim iRet = "" // 目标航班在携程是否存在数据
+Dim price = '' // 价格
+Dim source = '' // 来源
+Dim arrRet = ""
+Dim eachArr = [] //单条数据
+Dim length = '' // 数组长度
+Dim csDataArr = [] // 南航最终数据
+Dim ceDataArr = [] // 东航最终数据
+Dim isIn = False // 计录当前数据是否存在于最终数据中
+Dim times = 0 // 计录循环次数
+Dim num = [] // A1列排序
+
+
+/*2.南航数据与携程数据对比*/
+For Each csValue In csData
+	csValue[5] = CInt(csValue[5])
+	For Each xcValue In xcData
+		xcValue[2] = CInt(xcValue[2])
+		// 排除携程数据里南航以外信息
+		If xcValue[0] = '南方航空'
+			eachArr = []
+			// 选择同一航班数据
+			If StartsWith(xcValue[1],csValue[2])
+				// 价格对比，如果携程数据小于等于南航，选携程的数据来源，否则选南航
+				If CInt(xcValue[2])>CInt(csValue[5])
+					price = csValue[5]
+					source = '南航'
+				Else
+					price = xcValue[2]
+					source = '携程'
+				End If
+				eachArr = [source,'南方航空',csValue[2],csValue[3],csValue[4],price,csValue[6],csValue[7],csValue[8]]
+				csDataArr = push(csDataArr,eachArr)
+			End If
+		End If
+	Next
+Next
+
+
+/*3.处理南航有，但携程没有的数据*/
+For Each csValue In csData
+	length = Len(csDataArr)
+	isIn = False // 初始化计录当前数据是否存在于csDataArr中
+	times = 0 // 初始化计录循环次数
+	For Each ceArrValue In csDataArr
+		times = times+1
+		If times <= length
+			If csValue[2]=ceArrValue[2]
+				isIn = True
+				Break
+			Else
+				isIn = False
+			End If
+			
+		Else
+			// 判断当前数据是否存在于csDataArr中，如果没有，则加入
+			If isIn = False
+				csDataArr = push(csDataArr,csValue)
+				Break
+			End If
+		End If
+	Next
+Next
+
+/*4.东航数据与携程数据对比*/
+For Each ceValue In ceData
+	ceValue[5] = CInt(ceValue[5])
+	For Each xcValue In xcData
+		xcValue[2] = CInt(xcValue[2])
+		// 排除携程数据里东航以外信息
+		If xcValue[0] = '东方航空'
+			eachArr = []
+			price = ''
+			source = ''
+			// 选择同一航班数据
+			If StartsWith(xcValue[1],ceValue[2])
+				// 价格对比，如果携程数据小于等于东航，选携程的数据来源，否则选东航
+				If CInt(xcValue[2])>CInt(ceValue[5])
+					price = ceValue[5]
+					source = '东航'
+				Else
+					price = xcValue[2]
+					source = '携程'
+				End If
+				
+				eachArr = [source,'东方航空',ceValue[2],ceValue[3],ceValue[4],price,ceValue[6],ceValue[7],ceValue[8]]
+				ceDataArr = push(ceDataArr,eachArr)
+			End If
+		End If
+	Next
+Next
+/*5.处理东航有，但携程没有的数据*/
+For Each ceValue In ceData
+	length = Len(ceDataArr)
+	isIn = False // 初始化计录当前数据是否存在于ceDataArr中
+	times = 0 // 初始化计录循环次数
+	For Each ceArrValue In ceDataArr
+		times = times+1
+		If times <= length
+			If ceValue[2]=ceArrValue[2]
+				isIn = True
+				Break
+			Else
+				isIn = False
+			End If
+			
+		Else
+			// 判断当前数据是否存在于ceDataArr中，如果没有，则加入
+			If isIn = False
+				ceDataArr = push(ceDataArr,ceValue)
+				Break
+			End If
+		End If
+	Next
+Next
+
+
+/*6.结果写入Excel并另存为指定格式的数据*/
+arrRet = concat(csDataArr,ceDataArr)
+Try
+	objExcelWorkBook = Excel.OpenExcel(@res"config\\飞机票查询练习项目输出模板.xlsx",False,"Excel","","")
+	Excel.WriteRange(objExcelWorkBook,"机票信息","B2",arrRet,False)
+	// 另存
+	Excel.SaveOtherFile(objExcelWorkBook,@res"config\\"&g_dictGlobal["excelName"])
+	Excel.CloseExcel(objExcelWorkBook,False)
+Catch Ex
+	PublicBlock.ErrCapture("结果写入Excel并另存为指定格式失败:",Ex)
+	Return
+Else
+	Log.Info('结果写入Excel并另存为指定格式成功')
+End Try
+
+
+/*7.数据按价格进行排序*/
+Try
+	objExcelWorkBook = Excel.OpenExcel(@res"config\\"&g_dictGlobal["excelName"],True,"Excel","","")
+	#icon("@res:ch8ki32a-60ge-1hom-i2f9-bu6h0il5btb9.png")
+	Window.Show({"wnd":[{"cls":"XLMAIN","title":g_dictGlobal["excelName"]&" - Excel","app":"EXCEL"}]},"max")
+	// 选择需排序的价格列
+	#icon("@res:paaahjci-6ias-1gu8-udt7-2jcafngbekt4.png")
+	Image.Click({"wnd":[{"cls":"XLMAIN","title":g_dictGlobal["excelName"]&" - Excel","app":"EXCEL"}]},{"height":0,"width":0,"x":0,"y":0},@res"paaahjci-6ias-1gu8-udt7-2jcafngbekt4.png",0.9,"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"TopLeft","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","sMatchType":"GrayMatch","iSerialNo":1})
+	// 点击排序
+	#icon("@res:lrdqk2k1-tclc-cqin-ol7m-l9fibc98133m.png")
+	Mouse.Action({"wnd":[{"app":"EXCEL","cls":"XLMAIN","title":g_dictGlobal["excelName"]&" - Excel"},{"cls":"EXCEL2","idx":1},{"cls":"MsoCommandBar","title":"Ribbon"},{"cls":"MsoWorkPane","title":"Ribbon","aaname":"Ribbon"},{"cls":"NUIPane"},{"cls":"NetUIHWND","aaname":"Ribbon"}],"ctrl":[{"role":"ROLE_SYSTEM_PANE","name":"下层功能区"},{"role":"ROLE_SYSTEM_PROPERTYPAGE","name":"开始"},{"role":"ROLE_SYSTEM_TOOLBAR","name":"编辑"},{"role":"ROLE_SYSTEM_BUTTONDROPDOWN","name":"排序和筛选"}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+	// 点击升序
+	#icon("@res:75g93asl-qele-4tsj-q25t-i564gqssjlgn.png")
+	Mouse.Action({"wnd":[{"app":"EXCEL","cls":"Net UI Tool Window"},{"cls":"NetUIHWND"}],"ctrl":[{"role":"ROLE_SYSTEM_MENUITEM","name":"升序"}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+	// 选中阔选区域
+	#icon("@res:ns2evvs5-scc2-80so-151i-45igtscmpb8h.png")
+	UiElement.SetCheck({"wnd":[{"app":"EXCEL","cls":"bosa_sdm_XL9","title":"排序提醒"}],"ctrl":[{"role":"ROLE_SYSTEM_DIALOG","name":"排序提醒"},{"role":"ROLE_SYSTEM_RADIOBUTTON","name":"扩展选定区域(E)"}]},True,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200})
+	// 点击排序
+	#icon("@res:1lp5m16u-7d7r-7qdu-16jh-0fbtinnquck7.png")
+	Mouse.Action({"wnd":[{"app":"EXCEL","cls":"bosa_sdm_XL9","title":"排序提醒"}],"ctrl":[{"role":"ROLE_SYSTEM_DIALOG","name":"排序提醒"},{"role":"ROLE_SYSTEM_PUSHBUTTON","name":"排序(S)"}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+	// A1列加序号
+	iRet = Excel.GetRowsCount(objExcelWorkBook,"机票信息")
+	
+	For i = 1 To iRet-1 Step 1 
+		arrRet = push(num,i)
+	Next
+	Excel.WriteColumn(objExcelWorkBook,"机票信息","A2",num,False)
+	Excel.CloseExcel(objExcelWorkBook,True)
+Catch Ex
+	PublicBlock.ErrCapture("数据按价格进行排序失败:",Ex)
+	Return
+Else
+	Log.Info('数据按价格进行排序成功')
+End Try
+TracePrint "——————退出数据对比模块——————"
+
+

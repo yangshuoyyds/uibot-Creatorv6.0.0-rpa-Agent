@@ -1,0 +1,260 @@
+{
+  "id": "397b0de6745f18",
+  "name": "机票查询_无人值守",
+  "version": "6.0.1.220629",
+  "variables": [
+    {
+      "type": "none",
+      "name": "g_dictGlobal",
+      "value": "{}"
+    },
+    {
+      "type": "none",
+      "name": "g_iRetryNum",
+      "value": "0"
+    }
+  ],
+  "flow": [
+    {
+      "id": "start",
+      "rect": {
+        "x": 0,
+        "y": 10,
+        "width": 140,
+        "height": 50
+      },
+      "caption": "流程开始",
+      "type": "begin",
+      "next": {
+        "vertices": [],
+        "refId": "uibot397b0de6748668"
+      }
+    },
+    {
+      "id": "uibot397b0de6748668",
+      "rect": {
+        "x": 0,
+        "y": 80,
+        "width": 196,
+        "height": 64
+      },
+      "caption": "初始化",
+      "type": "task",
+      "next": {
+        "vertices": [],
+        "refId": "uibot397b0e39e8000c"
+      },
+      "exception": {
+        "vertices": [],
+        "refId": ""
+      },
+      "file": "初始化.task",
+      "in": "",
+      "out": ""
+    },
+    {
+      "id": "uibot397b0e39e8000c",
+      "rect": {
+        "x": 0,
+        "y": 190,
+        "width": 120,
+        "height": 120
+      },
+      "expression": "g_dictGlobal[\"isEx\"] = True",
+      "caption": "初始化是否异常",
+      "type": "if",
+      "yes": {
+        "vertices": [],
+        "refId": "uibot397b0e4c50a098"
+      },
+      "no": {
+        "vertices": [],
+        "refId": "uibot397b0e468820d4"
+      }
+    },
+    {
+      "id": "uibot397b0e468820d4",
+      "rect": {
+        "x": 0,
+        "y": 350,
+        "width": 196,
+        "height": 64
+      },
+      "caption": "南航数据获取、处理",
+      "type": "task",
+      "next": {
+        "vertices": [],
+        "refId": "uibot397b0e47a90f3e"
+      },
+      "exception": {
+        "vertices": [],
+        "refId": ""
+      },
+      "file": "南航模块.task",
+      "in": "",
+      "out": ""
+    },
+    {
+      "id": "uibot397b0e47a90f3e",
+      "rect": {
+        "x": 0,
+        "y": 460,
+        "width": 196,
+        "height": 64
+      },
+      "caption": "东航数据获取、处理",
+      "type": "task",
+      "next": {
+        "vertices": [],
+        "refId": "uibot397b0e4abd2654"
+      },
+      "exception": {
+        "vertices": [],
+        "refId": ""
+      },
+      "file": "东航模块.task",
+      "in": "",
+      "out": ""
+    },
+    {
+      "id": "uibot397b0e4abd2654",
+      "rect": {
+        "x": 150,
+        "y": 460,
+        "width": 196,
+        "height": 64
+      },
+      "caption": "携程数据获取、处理",
+      "type": "task",
+      "next": {
+        "vertices": [],
+        "refId": "uibot397b0e7f919568"
+      },
+      "exception": {
+        "vertices": [],
+        "refId": ""
+      },
+      "file": "携程模块.task",
+      "in": "",
+      "out": ""
+    },
+    {
+      "id": "uibot397b0e4c50a098",
+      "rect": {
+        "x": 180,
+        "y": 190,
+        "width": 120,
+        "height": 120
+      },
+      "expression": "g_iRetryNum < g_dictGlobal[\"maxRetryNum\"]",
+      "caption": "是否重试",
+      "type": "if",
+      "yes": {
+        "vertices": [],
+        "refId": "uibot397b0e8103ce04"
+      },
+      "no": {
+        "vertices": [],
+        "refId": ""
+      }
+    },
+    {
+      "id": "uibot397b0e57033dd0",
+      "rect": {
+        "x": 180,
+        "y": 10,
+        "width": 196,
+        "height": 64
+      },
+      "caption": "公共模块",
+      "type": "task",
+      "next": {
+        "vertices": [],
+        "refId": ""
+      },
+      "exception": {
+        "vertices": [],
+        "refId": ""
+      },
+      "file": "PublicBlock.task",
+      "in": "",
+      "out": ""
+    },
+    {
+      "id": "uibot397b0e729a33d6",
+      "rect": {
+        "x": 320,
+        "y": 290,
+        "width": 120,
+        "height": 120
+      },
+      "expression": "g_dictGlobal[\"isEx\"] = True",
+      "caption": "流程是否异常",
+      "type": "if",
+      "yes": {
+        "vertices": [],
+        "refId": "uibot397b0e4c50a098"
+      },
+      "no": {
+        "vertices": [],
+        "refId": ""
+      }
+    },
+    {
+      "id": "uibot397b0e7f919568",
+      "rect": {
+        "x": 320,
+        "y": 460,
+        "width": 196,
+        "height": 64
+      },
+      "caption": "数据对比、写入",
+      "type": "task",
+      "next": {
+        "vertices": [],
+        "refId": "uibot397b0e8103ce04"
+      },
+      "exception": {
+        "vertices": [],
+        "refId": ""
+      },
+      "file": "数据对比模块.task",
+      "in": "",
+      "out": ""
+    },
+    {
+      "id": "uibot397b0e8103ce04",
+      "rect": {
+        "x": 320,
+        "y": 110,
+        "width": 196,
+        "height": 64
+      },
+      "caption": "发送结果邮件",
+      "type": "task",
+      "next": {
+        "vertices": [],
+        "refId": "uibot397b0e8276c970"
+      },
+      "exception": {
+        "vertices": [],
+        "refId": ""
+      },
+      "file": "发送结果邮件.task",
+      "in": "",
+      "out": ""
+    },
+    {
+      "id": "uibot397b0e8276c970",
+      "rect": {
+        "x": 510,
+        "y": 130,
+        "width": 140,
+        "height": 50
+      },
+      "caption": "流程结束",
+      "type": "end"
+    }
+  ],
+  "type": "flow"
+}

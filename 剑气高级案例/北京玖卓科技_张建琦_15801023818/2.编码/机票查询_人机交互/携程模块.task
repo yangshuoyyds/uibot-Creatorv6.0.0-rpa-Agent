@@ -1,0 +1,128 @@
+/*
+作者：张建琦
+创建时间：2020年04月07日
+本流程块用于实现对携程官网以及数据的相关操作，对应设计步骤如下：
+1.判断本流程块是否执行
+2.进入携程官网
+3.查询航班数据
+4.抓取航班数据
+5.处理数据格式
+*/
+
+/*1.判断本流程块是否执行*/
+If g_dictGlobal["isEx"] = True
+	Log.Info("进入携程前流程出错")
+	Return
+End If
+
+TracePrint "——————进入携程模块——————"
+Dim hWeb = "" // 浏览器
+Dim dTime = '' // 选择出发当天日期
+Dim arrayData = "" // 数据抓取数组
+Dim dataLen = "" // 数据数组长度
+Dim price = "" // 经济舱价格
+Dim eachDataArr = [] // 每一条航班数据
+Dim dataArr = [] // 机票数据结果
+
+/*2.进入携程官网*/
+Try 3
+	App.Kill('chrome.exe')
+	hWeb = WebBrowser.Create("chrome",g_dictGlobal["xcAddr"],30000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"sBrowserPath":"","sStartArgs":""})
+	// 窗口最大化
+	#icon("@res:fighn7hf-gvcn-v9of-au8l-b8p964q1i87n.png")
+	Window.Show({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"携程旅行网官网*","app":"chrome"}]},"max")
+	// 点击机票，以此判断网页是否加载成功
+	#icon("@res:86ojp0os-km2n-v01u-05ve-i5jf3upfqcub.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"B","parentid":"searchBoxUl","idx":1}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+	
+Catch Ex
+	PublicBlock.ErrCapture("打开携程官网失败:",Ex)
+	Return
+Else
+	Log.Info('成功打开携程官网')
+End Try
+
+/*3.查询航班数据*/
+Try 3
+	// 点击logo
+	#icon("@res:vak1efkv-dbd5-3cg7-1asf-lnabj3acghtj.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"A","aaname":"携程旅行网 "}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+	#icon("@res:86ojp0os-km2n-v01u-05ve-i5jf3upfqcub.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"B","parentid":"searchBoxUl","idx":1}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+	// 输入出发地
+	#icon("@res:fg1jk4pc-mls8-umda-101o-tqkhss3fkkut.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"INPUT","id":"FD_StartCity"}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+	
+	#icon("@res:3hrfm3g7-dj56-16ot-0pch-t663dif5ep99.png")
+	Keyboard.InputText({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"INPUT","id":"FD_StartCity"}]},g_dictGlobal["departure"],True,20,10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":1000,"bSetForeground":True,"sSimulate":"message","bValidate":False,"bClickBeforeInput":False})
+	Keyboard.Press("Enter", "press", [],{"iDelayAfter":300,"iDelayBefore":200,"sSimulate":"simulate"})
+	
+	// 输入到达地
+	#icon("@res:u9q55ffv-89pb-msvn-41pq-pq6uhq3s0b24.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"INPUT","id":"FD_DestCity"}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":200,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+	#icon("@res:lvm1m3ls-0icp-hfjs-7t1c-d02nhmjdefth.png")
+	Keyboard.InputText({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"INPUT","id":"FD_DestCity"}]},g_dictGlobal["arrival"],True,20,10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":500,"bSetForeground":True,"sSimulate":"message","bValidate":False,"bClickBeforeInput":False})
+	Keyboard.Press("Enter", "press", [],{"iDelayAfter":300,"iDelayBefore":200,"sSimulate":"simulate"})
+	
+	// 选择时间
+	dTime = PublicBlock.GetDate(0)
+	#icon("@res:icrojc5b-ohic-cebs-2b2b-u65npn0c6q48.png")
+	Keyboard.InputText({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"INPUT","id":"FD_StartDate"}]},dTime,True,20,10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":500,"bSetForeground":True,"sSimulate":"message","bValidate":False,"bClickBeforeInput":False})
+	// 键盘按下Enter，查询相关机票信息
+	Keyboard.Press("Enter", "press", [],{"iDelayAfter":300,"iDelayBefore":200,"sSimulate":"simulate"})
+	
+	// 点击数据页面的默认排序，以此判断相关机票信息页是否加载成功
+	#icon("@res:jaomgma0-cvne-7ggd-6rit-est5pu9l54tg.png")
+	Mouse.Action({"wnd":[{"cls":"Chrome_WidgetWin_1","title":"*","app":"chrome"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}],"html":[{"tag":"SPAN","parentid":"searchForm","aaname":"单程 "}]},"left","click",10000,{"bContinueOnError":False,"iDelayAfter":300,"iDelayBefore":3000,"bSetForeground":True,"sCursorPosition":"Center","iCursorOffsetX":0,"iCursorOffsetY":0,"sKeyModifiers":[],"sSimulate":"simulate","bMoveSmoothly":False})
+Catch Ex
+	PublicBlock.ErrCapture("查询相关机票信息失败:",Ex)
+	Return
+Else
+	Log.Info('查询相关机票信息成功')
+End Try
+
+/*4.抓取航班数据*/
+Try
+	Mouse.Wheel(50,"down", [],{"iDelayAfter":300,"iDelayBefore":200})
+	arrayData = UiElement.DataScrap({"html":[{"id":"app","tag":"DIV"}],"wnd":[{"app":"chrome","cls":"Chrome_WidgetWin_1","title":"*"},{"cls":"Chrome_RenderWidgetHostHWND","title":"Chrome Legacy Window"}]},{"Columns":[{"props":["text"],"selecors":[{"className":"main filter-v2 zelda_color smooth-v1","index":0,"prefix":"","tag":"div","value":"div.main.filter-v2.zelda_color.smooth-v1"},{"className":"body-wrapper  ","index":0,"prefix":">","tag":"div","value":"div.body-wrapper"},{"className":"result-wrapper","index":0,"prefix":">","tag":"div","value":"div.result-wrapper"},{"className":"flight-list root-flights","index":0,"prefix":">","tag":"div","value":"div.flight-list.root-flights"},{"className":"","index":0,"prefix":">","tag":"span","value":"span"},{"className":"","index":0,"prefix":">","tag":"div","value":"div"},{"index":0,"prefix":">","tag":"div","value":"div"},{"className":"flight-item domestic","index":0,"prefix":">","tag":"div","value":"div.flight-item.domestic"},{"className":"flight-box","index":0,"prefix":">","tag":"div","value":"div.flight-box"},{"className":"flight-row","index":0,"prefix":">","tag":"div","value":"div.flight-row"},{"className":"flight-airline","index":0,"prefix":">","tag":"div","value":"div.flight-airline"},{"className":"airline-name","index":0,"prefix":">","tag":"div","value":"div.airline-name"},{"className":"","index":0,"prefix":">","tag":"span","value":"span"}]},{"props":["text"],"selecors":[{"className":"main filter-v2 zelda_color smooth-v1","index":0,"prefix":"","tag":"div","value":"div.main.filter-v2.zelda_color.smooth-v1"},{"className":"body-wrapper  ","index":0,"prefix":">","tag":"div","value":"div.body-wrapper"},{"className":"result-wrapper","index":0,"prefix":">","tag":"div","value":"div.result-wrapper"},{"className":"flight-list root-flights","index":0,"prefix":">","tag":"div","value":"div.flight-list.root-flights"},{"className":"","index":0,"prefix":">","tag":"span","value":"span"},{"className":"","index":0,"prefix":">","tag":"div","value":"div"},{"index":0,"prefix":">","tag":"div","value":"div"},{"className":"flight-item domestic","index":0,"prefix":">","tag":"div","value":"div.flight-item.domestic"},{"className":"flight-box","index":0,"prefix":">","tag":"div","value":"div.flight-box"},{"className":"flight-row","index":0,"prefix":">","tag":"div","value":"div.flight-row"},{"className":"flight-airline","index":0,"prefix":">","tag":"div","value":"div.flight-airline"},{"className":"plane","index":0,"prefix":">","tag":"div","value":"div.plane"},{"className":"plane","index":0,"prefix":">","tag":"div","value":"div.plane"},{"className":"plane-No","index":0,"prefix":">","tag":"span","value":"span.plane-No"}]},{"props":["text"],"selecors":[{"className":"main filter-v2 zelda_color smooth-v1","index":0,"prefix":"","tag":"div","value":"div.main.filter-v2.zelda_color.smooth-v1"},{"className":"body-wrapper  ","index":0,"prefix":">","tag":"div","value":"div.body-wrapper"},{"className":"result-wrapper","index":0,"prefix":">","tag":"div","value":"div.result-wrapper"},{"className":"flight-list root-flights","index":0,"prefix":">","tag":"div","value":"div.flight-list.root-flights"},{"className":"","index":0,"prefix":">","tag":"span","value":"span"},{"className":"","index":0,"prefix":">","tag":"div","value":"div"},{"index":0,"prefix":">","tag":"div","value":"div"},{"className":"flight-item domestic","index":0,"prefix":">","tag":"div","value":"div.flight-item.domestic"},{"className":"flight-box","index":0,"prefix":">","tag":"div","value":"div.flight-box"},{"className":"flight-operate","index":0,"prefix":">","tag":"div","value":"div.flight-operate"},{"className":"flight-price","index":0,"prefix":">","tag":"div","value":"div.flight-price"},{"className":"flight-price domestic-flight-price","index":0,"prefix":">","tag":"div","value":"div.flight-price.domestic-flight-price"},{"className":"price over-size ","index":0,"prefix":">","tag":"div","value":"div.price.over-size"},{"className":"price","index":0,"prefix":">","tag":"span","value":"span.price"}]}],"ExtractTable":0},{"objNextLinkElement":"","iMaxNumberOfPage":5,"iMaxNumberOfResult":-1,"iDelayBetweenMS":1000,"bContinueOnError":False})
+Catch Ex
+	PublicBlock.ErrCapture("抓取航班数据失败:",Ex)
+	Return
+Else
+	// 判断抓取到数据的长度，以此判断数据抓取结果正确与否
+	dataLen = Len(arrayData)
+	If dataLen>0
+		Log.Info('抓取航班数据成功')
+	Else
+		Log.Info('航班数据长度为0，数据抓取失败')
+		g_dictGlobal["isEx"] = True
+		Return
+	End If
+End Try
+
+/*5.处理数据格式*/
+Try
+	For Each value In arrayData
+		
+		eachDataArr = [] // 初始化每一条航班数据
+		// 航空公司
+		eachDataArr = push(eachDataArr,value[0])
+		// 航班号
+		eachDataArr = push(eachDataArr,value[1])
+		// 经济舱价格
+		price = DigitFromStr(value[2])
+		eachDataArr = push(eachDataArr,price)
+		dataArr = push(dataArr,eachDataArr)
+	Next
+	g_dictGlobal["xcData"] = dataArr
+Catch Ex
+	PublicBlock.ErrCapture("处理携程数据格式失败:",Ex)
+	Return
+Else
+	Log.Info('处理携程数据格式成功')
+End Try
+
+TracePrint "——————退出携程模块——————"
+
+
+
