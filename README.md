@@ -55,23 +55,21 @@ F:/skill/UB-skill/
 │   ├── generator.py                 # 代码生成器
 │   ├── query.py                     # 交互式查询工具
 │   ├── validator.py                 # 代码验证工具
+│   ├── jianqi-generator.py          # 剑气代码生成器（v1.5.0）⭐
 │   ├── uibot-tools.bat              # Windows 快速启动脚本
 │   ├── uibot-tools.sh               # Linux/Mac 快速启动脚本
 │   └── README.md                    # 工具使用文档
-└── 企业级流程模板/                   # 官方企业级流程模板
-    ├── main.prj                     # 主流程项目文件
-    ├── 企业级流程模板.flow           # 主流程图
-    ├── 配置初始化.task               # 配置初始化模块
-    ├── 目标程序初始化.task           # 应用初始化模块
-    ├── 获取新数据.task               # 数据获取模块
-    ├── 异常处理.task                 # 异常处理模块
-    ├── 重试计数.task                 # 重试机制模块
-    ├── 流程结束.task                 # 流程结束模块
-    ├── subFlowREF/                  # 子流程目录
-    │   └── 执行流程/                # 执行流程子流程
-    └── res/                         # 资源文件目录
-        └── Data/
-            └── Config.xlsx          # 配置文件
+├── 企业级流程模板/                   # 官方企业级流程模板
+│   ├── main.prj                     # 主流程项目文件
+│   ├── 企业级流程模板.flow           # 主流程图
+│   └── ...
+└── 剑气高级案例/                     # 剑气高级案例分析（v1.5.0）⭐
+    └── 北京玖卓科技_张建琦_15801023818/
+        ├── 1.设计/                  # 设计文档
+        ├── 2.编码/                  # 代码实现
+        ├── 3.测试/                  # 测试相关
+        ├── 4.上线/                  # 上线部署
+        └── 5.截图/                  # 项目截图
 ```
 
 ## 🚀 安装使用
@@ -265,6 +263,28 @@ F:/skill/UB-skill/
 - **最佳实践建议**：模式组合使用和设计原则
 - 适合：流程架构设计和模式选择
 
+### 剑气高级案例文档（v1.5.0）⭐
+
+#### [jianqi-advanced-cases.md](jianqi-advanced-cases.md) - 剑气高级案例分析 🚀
+- **真实企业级项目**：机票查询RPA自动化流程完整实现
+- **项目架构分析**：从设计到上线的完整项目结构
+- **核心技术要点**：7大技术亮点深度解析
+  - 智能价格对比算法
+  - Web自动化技术
+  - 天气API集成
+  - Excel自动化处理
+  - 配置化设计
+  - 异常处理机制
+  - 邮件通知功能
+- **代码模式库**：4种可复用的代码模式
+  - 多数据源采集与对比
+  - 配置驱动的流程设计
+  - 智能重试机制
+  - 数据验证与清洗
+- **最佳实践总结**：7大最佳实践规范
+- **常见问题解决**：6个实战问题及解决方案
+- 适合：学习企业级RPA项目开发和实战应用
+
 ### 开发者指南文档（v1.3.0）
 
 #### [developer-guide-index.md](developer-guide-index.md) - 开发者指南索引 📚
@@ -297,6 +317,7 @@ F:/skill/UB-skill/
 | 解决问题 | faq.md | 常见问题的解决方案 |
 | 企业级开发 | enterprise-best-practices.md | REFramework架构和最佳实践 |
 | 流程设计 | design-patterns.md | 6种设计模式详解 |
+| 剑气案例学习 | jianqi-advanced-cases.md | 真实企业级项目完整分析 |
 
 ## 🔧 技术细节
 
@@ -373,7 +394,35 @@ python tools/generator.py -i
 python tools/generator.py -t web_automation -p '{"url":"https://example.com"}' -o output.task
 ```
 
-#### 3. 交互式查询工具 (tools/query.py)
+#### 3. 剑气代码生成器 (tools/jianqi-generator.py) ⭐ 新增
+基于剑气高级案例的标准化代码生成工具：
+
+- **6 种剑气模板**：多数据源采集、数据对比、配置驱动、完整项目、公共函数库、初始化模块
+- **企业级标准**：遵循剑气高级案例的最佳实践
+- **完整项目生成**：一键生成包含流程文件、配置文件、README的完整项目
+- **交互式界面**：友好的参数输入体验
+
+可用模板：
+- `multi_source` - 多数据源采集模板
+- `data_compare` - 数据对比模板
+- `config_driven` - 配置驱动流程模板
+- `full_project` - 完整项目结构
+- `public_block` - 公共函数库
+- `init_module` - 初始化模块
+
+使用示例：
+```bash
+# 交互模式
+python tools/jianqi-generator.py -i
+
+# 生成多数据源采集代码
+python tools/jianqi-generator.py -t multi_source -p '{"author":"张三","source_name":"南航"}' -o 南航模块.task
+
+# 生成完整项目
+python tools/jianqi-generator.py -t full_project -p '{"project_name":"机票查询","author":"张三"}' -o MyProject
+```
+
+#### 4. 交互式查询工具 (tools/query.py)
 提供友好的文档查询界面：
 
 - **多文档搜索**：同时搜索命令、示例、FAQ、模板等
@@ -505,7 +554,17 @@ tools\uibot-tools.bat
 
 ## 🔄 更新日志
 
-### v1.4.0 (2024-01-15) ⭐ 新增
+### v1.5.0 (2026-05-02) ⭐ 最新
+- ✅ 新增剑气高级案例分析文档 (jianqi-advanced-cases.md)
+- ✅ 新增剑气代码生成器 (tools/jianqi-generator.py)
+- ✅ 深度分析真实企业级RPA项目（机票查询系统）
+- ✅ 提供7大核心技术要点解析
+- ✅ 提供4种可复用的代码模式
+- ✅ 提供6种剑气标准化代码模板
+- ✅ 完整的项目结构生成功能
+- ✅ 最佳实践总结和常见问题解决方案
+
+### v1.4.0 (2024-01-15)
 - ✅ 新增辅助工具集 (tools/)
 - ✅ 命令搜索工具 (search.py) - 快速搜索命令
 - ✅ 代码生成器 (generator.py) - 6种模板自动生成代码
