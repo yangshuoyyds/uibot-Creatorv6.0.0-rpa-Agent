@@ -50,6 +50,14 @@ F:/skill/UB-skill/
 ├── quick-start.md                   # 快速入门指南（v1.3.0）
 ├── UPGRADE.md                       # 升级说明文档
 ├── README.md                        # 本说明文档
+├── tools/                           # 辅助工具集（v1.4.0）⭐
+│   ├── search.py                    # 命令搜索工具
+│   ├── generator.py                 # 代码生成器
+│   ├── query.py                     # 交互式查询工具
+│   ├── validator.py                 # 代码验证工具
+│   ├── uibot-tools.bat              # Windows 快速启动脚本
+│   ├── uibot-tools.sh               # Linux/Mac 快速启动脚本
+│   └── README.md                    # 工具使用文档
 └── 企业级流程模板/                   # 官方企业级流程模板
     ├── main.prj                     # 主流程项目文件
     ├── 企业级流程模板.flow           # 主流程图
@@ -320,6 +328,106 @@ F:/skill/UB-skill/
 
 ## 🆕 新增功能
 
+### v1.4.0 新增内容（辅助工具集）⭐
+
+#### 1. 命令搜索工具 (tools/search.py)
+快速搜索 UIBot 命令的强大工具：
+
+- **多种搜索方式**：关键词搜索、功能描述搜索、正则表达式
+- **交互式界面**：友好的命令行交互体验
+- **智能匹配**：自动识别功能描述并推荐命令
+- **快速定位**：从 500+ 命令中秒级找到所需命令
+
+使用示例：
+```bash
+# 交互模式
+python tools/search.py -i
+>>> func 如何点击按钮
+
+# 命令行模式
+python tools/search.py 点击
+```
+
+#### 2. 代码生成器 (tools/generator.py)
+根据模板自动生成 UIBot 代码：
+
+- **6 种实用模板**：网页自动化、Excel处理、文件批处理、数据采集、REFramework、错误处理
+- **参数化配置**：灵活的参数输入
+- **即生即用**：生成的代码可直接运行
+- **时间戳标注**：自动添加生成时间
+
+可用模板：
+- `web_automation` - 网页自动化
+- `excel_processing` - Excel 数据处理
+- `file_batch` - 文件批量处理
+- `data_collection` - 数据采集
+- `reframework` - REFramework 企业级框架
+- `error_handling` - 完整错误处理
+
+使用示例：
+```bash
+# 交互模式
+python tools/generator.py -i
+
+# 生成网页自动化代码
+python tools/generator.py -t web_automation -p '{"url":"https://example.com"}' -o output.task
+```
+
+#### 3. 交互式查询工具 (tools/query.py)
+提供友好的文档查询界面：
+
+- **多文档搜索**：同时搜索命令、示例、FAQ、模板等
+- **分类查询**：按类型快速定位内容
+- **全文搜索**：在所有文档中搜索关键词
+- **快速索引**：快速浏览文档结构
+
+功能菜单：
+1. 搜索命令
+2. 查看示例
+3. 查看常见问题
+4. 查看代码模板
+5. 快速索引
+6. 企业级最佳实践
+7. 全文搜索
+
+使用示例：
+```bash
+python tools/query.py -i
+```
+
+#### 4. 代码验证工具 (tools/validator.py)
+检查 UIBot 代码质量和潜在问题：
+
+- **语法检查**：未闭合引号、变量命名规范等
+- **最佳实践**：硬编码路径、固定延迟等
+- **性能检测**：循环中的重复操作等
+- **错误处理**：缺少 Try-Catch 等
+- **安全扫描**：明文密码、SQL注入风险等
+
+使用示例：
+```bash
+# 验证单个文件
+python tools/validator.py main.task
+
+# 验证整个目录
+python tools/validator.py -d ./project -r
+```
+
+#### 5. 快速启动脚本
+提供 Windows 和 Linux/Mac 的快速启动脚本：
+
+**Windows**:
+```cmd
+tools\uibot-tools.bat
+```
+
+**Linux/Mac**:
+```bash
+./tools/uibot-tools.sh
+```
+
+图形化菜单，一键启动所有工具！
+
 ### v1.2.0 新增内容（企业级）
 
 #### 1. 企业级最佳实践 (enterprise-best-practices.md)
@@ -396,6 +504,15 @@ F:/skill/UB-skill/
 | 异常处理策略 | ❌ | ❌ | ✅ |
 
 ## 🔄 更新日志
+
+### v1.4.0 (2024-01-15) ⭐ 新增
+- ✅ 新增辅助工具集 (tools/)
+- ✅ 命令搜索工具 (search.py) - 快速搜索命令
+- ✅ 代码生成器 (generator.py) - 6种模板自动生成代码
+- ✅ 交互式查询工具 (query.py) - 友好的文档查询界面
+- ✅ 代码验证工具 (validator.py) - 检查代码质量和问题
+- ✅ 快速启动脚本 (Windows/Linux/Mac)
+- ✅ 完整的工具使用文档
 
 ### v1.3.0 (2024-01-15)
 - ✅ 新增开发者指南索引文档 (developer-guide-index.md)
